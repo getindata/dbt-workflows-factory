@@ -1,20 +1,54 @@
 from task_builder import TaskBuilder
+from workflow_parameters import WorkflowParameters
 
 
 class FlowBuilder:
 
-    def __init__(self, manifest_path: str, env: str,
-                 workflow_config_file_name: str, key: str):
+    def __init__(self,
+                 manifest_path: str,
+                 env: str,
+                 workflow_config_file_name: str,
+                 key: str,
+                 workflow_parameters: WorkflowParameters = None,
+                 ):
         self.key = key
         self.dag_path = manifest_path
         self.env = env
         self.workflow_config_file_name = workflow_config_file_name
         self._builder = TaskBuilder(manifest_path, env,
                                     workflow_config_file_name, key)
+        self.params = workflow_parameters
+
+        if self.params is not None:
+            region = self.params.get_region() if \
+                self.params.get_region() is not None else 'europe-west6'
+            command = self.params.get_command() if \
+                self.params.get_command() is not None else \
+                '${"dbt --no-write-json run --target env_execution ' \
+                '--project-dir /dbt --profiles-dir /root/.dbt --select " + ' \
+                'command }'
+            key_volume_path = self.params.get_key_volume_path() if \
+                self.params.get_key_volume_path() is not None \
+                else '/mnt/disks/var/:/mnt/disks/var/:rw'
+            key_volume_mount_path = self.params.get_key_volume_mount_path() \
+                if self.params.get_key_volume_mount_path() is not None \
+                else '/mnt/disks/var'
+            remote_path = self.params.get_key_remote_path() if self.params \
+                is not None else 'dataops-dev-state'
+        else:
+            region = 'europe-west'
+            command = '${"dbt --no-write-json run --target env_execution ' \
+                      '--project-dir /dbt --profiles-dir /root/.dbt --select ' \
+                      '" + ' \
+                      'command }'
+            key_volume_path = '/mnt/disks/var/:/mnt/disks/var/:rw'
+            key_volume_mount_path = '/mnt/disks/var'
+            remote_path = 'dataops-dev-state'
+
         self.workflow_init = {'init': {
             'assign': [
                 {'projectId': '${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'},
-                {'region': 'europe-west6'},
+                {'region': region},
                 {'batchApi': 'batch.googleapis.com/v1'},
                 {'batchApiUrl':
                      '${"https://" + batchApi + "/projects/" + projectId + '
@@ -25,11 +59,7 @@ class FlowBuilder:
             'subworkflowBatchJob':
                 {'params': ['batchApiUrl', 'command', 'jobId', 'imageUri'],
                  'steps': [{'init': {'assign': [
-                     {'fullcomand': '${"dbt --no-write-json run --target '
-                                    'env_execution '
-                                    '--project-dir /dbt --profiles-dir '
-                                    '/root/.dbt '
-                                    '--select " + command }'}]}}, {
+                     {'fullcomand': command}]}}, {
                      'createAndRunBatchJob':
                          {'call': 'http.post',
                           'args': {
@@ -44,9 +74,8 @@ class FlowBuilder:
                                   'taskSpec': {
                                       'volumes': [{
                                           'gcs': {
-                                              'remotePath': 'dataops-dev'
-                                                            '-state'},
-                                          'mountPath': '/mnt/disks/var'}],
+                                              'remotePath': remote_path},
+                                          'mountPath': key_volume_mount_path}],
                                       'runnables': [{
                                           'container': {
                                               'imageUri': 'imageUri',
@@ -54,9 +83,7 @@ class FlowBuilder:
                                               'commands': [
                                                   '-c',
                                                   'full_command'],
-                                              'volumes': [
-                                                  '/mnt/disks/var/:/mnt'
-                                                  '/disks/var/:rw']},
+                                              'volumes': [key_volume_path]},
                                           'environment': {
                                               'variables': {
                                                   'GCP_KEY_PATH': 'keypath',
