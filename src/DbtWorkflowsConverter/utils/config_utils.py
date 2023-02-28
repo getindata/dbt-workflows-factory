@@ -1,9 +1,9 @@
 import logging
 import os
-import pathlib
-from typing import Any, Union
+from typing import Union
 
 import yaml
+
 
 def read_config(
     dag_path: Union[str, os.PathLike[str]],

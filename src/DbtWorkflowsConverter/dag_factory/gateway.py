@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 
-import utils
+import src.DbtWorkflowsConverter.dag_factory.utils as utils
+
 
 @dataclass
 class NodeProperties:
@@ -42,27 +43,22 @@ def get_gateway_dependencies(manifest: dict, separation_layer: SeparationLayer) 
         manifest=manifest, separation_layer_right=separation_layer.right
     )
 
-    upstream_dependencies_connected_to_downstream = (
-        _get_upstream_dependencies_connected_to_downstream(
-            manifest=manifest,
-            separation_layer_left=separation_layer.left,
-            downstream_dependencies=downstream_dependencies,
-        )
+    upstream_dependencies_connected_to_downstream = _get_upstream_dependencies_connected_to_downstream(
+        manifest=manifest,
+        separation_layer_left=separation_layer.left,
+        downstream_dependencies=downstream_dependencies,
     )
     dependencies = [
         node_name
         for node_name, values in manifest["nodes"].items()
-        if values["schema"] == separation_layer.left
-        and node_name in upstream_dependencies_connected_to_downstream
+        if values["schema"] == separation_layer.left and node_name in upstream_dependencies_connected_to_downstream
     ]
     return dependencies
 
 
 def _get_downstream_dependencies(manifest: dict, separation_layer_right: str) -> List:
     downstream_dependencies = [
-        node_name
-        for node_name, values in manifest["nodes"].items()
-        if values["schema"] == separation_layer_right
+        node_name for node_name, values in manifest["nodes"].items() if values["schema"] == separation_layer_right
     ]
     return downstream_dependencies
 

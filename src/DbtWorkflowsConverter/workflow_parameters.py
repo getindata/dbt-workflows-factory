@@ -1,10 +1,10 @@
 class WorkflowParameters:
     def __init__(
-            self,
-            region: str = None,
-            command: str = None,
-            key_volume: str = None,
-            key_remote_path: str = None,
+        self,
+        region: str = None,
+        command: str = None,
+        key_volume: str = None,
+        key_remote_path: str = None,
     ):
         self.region = region
         self.command = command
