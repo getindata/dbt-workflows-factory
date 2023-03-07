@@ -18,7 +18,7 @@ from src.DbtWorkflowsConverter.dag_factory.utils import (
     is_model_run_task,
     is_test_task,
     is_source_sensor_task,
-    is_ephemeral_task
+    is_ephemeral_task,
 )
 
 
@@ -35,6 +35,7 @@ class DbtGraphFactory:
 
     def __init__(self) -> None:
         self.configuration = None
+        self.graph = nx.DiGraph()
 
     def add_execution_tasks(self, manifest: dict) -> None:
         self._add_gateway_execution_tasks(manifest=manifest)
@@ -45,10 +46,17 @@ class DbtGraphFactory:
                 self._add_graph_node_for_model_run_task(node_name, manifest_node, manifest)
             elif (
                     is_test_task(node_name)
-                    and len(self._get_model_dependencies_from_manifest_node(manifest_node, manifest)) > 1
+                    and len(self._get_model_dependencies_from_manifest_node(
+                        manifest_node,
+                        manifest
+                    )) > 1
             ):
                 logging.info("Creating tasks for: " + node_name)
-                self._add_graph_node_for_multiple_deps_test(node_name, manifest_node, manifest)
+                self._add_graph_node_for_multiple_deps_test(
+                    node_name,
+                    manifest_node,
+                    manifest
+                )
 
     def _add_gateway_execution_tasks(self, manifest: dict) -> None:
         pass

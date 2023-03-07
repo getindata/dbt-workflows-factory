@@ -1,10 +1,12 @@
 class WorkflowParameters:
     def __init__(
         self,
-        region: str = None,
-        command: str = None,
-        key_volume: str = None,
-        key_remote_path: str = None,
+        region: str = "europe-west6",
+        command: str = ('${"dbt --no-write-json run --target env_execution '
+            '--project-dir /dbt --profiles-dir /root/.dbt --select " + '
+            "command }"),
+        key_volume: str = "/mnt/disks/var/:/mnt/disks/var/:rw",
+        key_remote_path: str = None
     ):
         self.region = region
         self.command = command

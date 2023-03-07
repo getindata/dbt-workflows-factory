@@ -1,38 +1,39 @@
 import json
 import logging
+import yaml
 
 from src.DbtWorkflowsConverter.dag_factory.dbt_graph_factory import DbtGraphFactory
 from src.DbtWorkflowsConverter.flow_builder import FlowBuilder
+from src.DbtWorkflowsConverter.dbt_workflows_converter_params import DbtWorkflowsConverterParams
 
 
 class DbtWorkflowsConverter:
-    dbt_manifest_path: str
-    env: str
-    workflow_config_file_name: str
     _builder: FlowBuilder
 
     def __init__(
         self,
-        dbt_manifest_path: str,
-        env: str,
-        workflow_config_file_name: str = "workflow.yml",
-        key: str = "/mnt/disks/var/bq-dataops-dev-342817.json",
+        params: DbtWorkflowsConverterParams,
+        workflows_yaml_name: str = "workflow.yaml"
     ):
-        self.dbt_manifest_path = dbt_manifest_path
-        self.env = env
-        self.workflow_config_file_name = workflow_config_file_name
+        self.params = params
         self._graph_factory = DbtGraphFactory()
-        self.manifest_graph = self._graph_factory.graph()
-        self._builder = FlowBuilder(dbt_manifest_path, env, workflow_config_file_name, key)
-        self.manifest = self._load_dbt_manifest(self.dbt_manifest_path)
-        pass
-
-    def parse_json(self):
-        return self._graph_factory.add_execution_tasks(self.manifest)
+        self._builder = FlowBuilder(
+            self.params,
+        )
+        self.manifest_path = self.params.get_dbt_manifest_path()
+        self.workflows_yaml_name = workflows_yaml_name
+        self.flow_json = None
 
     def create_tasks(self):
-        # TODO (@asledz): Add here calling ta
-        pass
+        self.flow_json = self._builder.create_workflow(self.manifest_path)
+        return self.flow_json
+
+    def write_tasks(self):
+        if self.flow_json is None:
+            self.create_tasks()
+        with open(self.workflows_yaml_name, 'w') as outfile:
+            yaml.dump(self.flow_json, outfile, default_flow_style=False)
+
 
     @staticmethod
     def _load_dbt_manifest(manifest_path: str) -> dict:
