@@ -1,5 +1,5 @@
 import networkx as nx
-from src.dbt_workflows_converter.task_builder import Task
+from task_builder import Task
 
 
 class FlowBuilder:
@@ -11,38 +11,21 @@ class FlowBuilder:
 
     def find_paths(self, node, sink_node):
         if node == sink_node:
-            return [
-                [
-                    Task(
-                        self.graph.nodes[node],
-                        self.graph.nodes[node].get("task_command"),
-                        self.graph.nodes[node].get("job_id"),
-                    )
-                ]
-            ]
+            return [[Task(node, self.graph.nodes[node])]]
         paths = []
         next_nodes = self.graph.successors(node)
         for next_node in next_nodes:
             next_paths = self.find_paths(next_node, sink_node)
             for path in next_paths:
-                paths.append(
-                    [
-                        Task(
-                            self.graph.nodes[node],
-                            self.graph.nodes[node].get("task_command"),
-                            self.graph.nodes[node].get("job_id"),
-                        )
-                    ]
-                    + path
-                )
+                paths.append([Task(node, self.graph.nodes[node])] + path)
         return paths
 
     def clear_structure(self, structure):
         for i in range(1, len(structure) - 1):
             branch = structure[i]
             if isinstance(branch, list):
-                previous_task_id = structure[i - 1].job_id
-                next_task_id = structure[i + 1].job_id
+                previous_task_id = structure[i - 1]
+                next_task_id = structure[i + 1]
 
                 for t in branch:
                     first_id_in_branch = t[0].job_id
@@ -67,21 +50,17 @@ class FlowBuilder:
         if len(sink_nodes) != 1:
             raise ValueError("Manifest DAG must have exactly one sink node")
         sink_node = sink_nodes[0]
-
-        path_list = [source_node for source_node in source_nodes]
+        path_list = [
+            Task(source_node, self.graph.nodes[source_node])
+            for source_node in source_nodes
+        ]
         for source_node in source_nodes:
             paths = self.find_paths(source_node, sink_node)
             if len(paths) > 1:
                 path_list.append(paths)
             else:
                 path_list.append(paths[0])
-        path_list.append(
-            Task(
-                self.graph.nodes[sink_node],
-                self.graph.nodes[sink_node].get("task_command"),
-                self.graph.nodes[sink_node].get("job_id"),
-            )
-        )
+
 
         self.clear_structure(path_list)
 

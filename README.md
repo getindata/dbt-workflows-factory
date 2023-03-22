@@ -50,6 +50,13 @@ converter.convert() # writes to file workflow.yaml
 
 ```
 
+To call from cli, you can
+
+```
+python src/dbt_workflows_converter/compile.py tests/manifest.json --image-uri xxx --region xxx --full-command xxx --remote-path xxx --key-volume-mount-path xxx --key-volume-path xxx --key-path xxx
+
+```
+
 ## Project Organization
 
 - .devcontainer - This directory contains required files for creating a [Codespace](https://github.com/features/codespaces).

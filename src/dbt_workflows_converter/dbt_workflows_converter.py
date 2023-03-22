@@ -1,10 +1,10 @@
 import yaml
-from src.dbt_workflows_converter.dag_factory.dag_factory import (
+from dag_factory.dag_factory import (
     DbtManifestParser,
 )
-from src.dbt_workflows_converter.params import Params
-from src.dbt_workflows_converter.yaml_builder import YamlLib
-from src.dbt_workflows_converter.flow_builder import FlowBuilder
+from params import Params
+from yaml_builder import YamlLib
+from flow_builder import FlowBuilder
 
 
 class DbtWorkflowsConverter:

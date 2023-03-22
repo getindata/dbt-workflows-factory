@@ -1,5 +1,5 @@
-from src.dbt_workflows_converter.params import Params
-from src.dbt_workflows_converter.task_builder import Task
+from params import Params
+from task_builder import Task
 
 
 class YamlLib:
@@ -145,7 +145,7 @@ class YamlLib:
 
     def create_workflow(self, tasks, job_list):
         flow_yaml_desc = {
-            self.create_mainflow(job_list, tasks),
-            self.subworkflow(),
+            "main": self.create_mainflow(job_list, tasks)["main"],
+            "subworkflowBatchJob": self.subworkflow()["subworkflowBatchJob"],
         }
         return flow_yaml_desc
