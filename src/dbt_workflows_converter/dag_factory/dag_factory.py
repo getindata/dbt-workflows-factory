@@ -20,7 +20,9 @@ class DbtManifestParser:
             if isinstance(node, ModelNode):
                 task_alias = node.alias
 
-                graph.add_node(task_id, task_command=node.name, task_alias=task_alias)
+                graph.add_node(
+                    task_id, task_command=node.name, task_alias=task_alias
+                )
 
                 upstream_nodes = []
                 for upstream_id in node.depends_on.nodes:

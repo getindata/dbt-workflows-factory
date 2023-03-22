@@ -31,7 +31,11 @@ class YamlLib:
             "subworkflowBatchJob": {
                 "params": ["batchApiUrl", "command", "jobId", "imageUri"],
                 "steps": [
-                    {"init": {"assign": [{"fullcomand": self.params.full_command}]}},
+                    {
+                        "init": {
+                            "assign": [{"fullcomand": self.params.full_command}]
+                        }
+                    },
                     {
                         "createAndRunBatchJob": {
                             "call": "http.post",
@@ -45,7 +49,9 @@ class YamlLib:
                                         "taskSpec": {
                                             "volumes": [
                                                 {
-                                                    "gcs": {"remotePath": self.params.remote_path},
+                                                    "gcs": {
+                                                        "remotePath": self.params.remote_path
+                                                    },
                                                     "mountPath": self.params.key_volume_mount_path,
                                                 }
                                             ],
@@ -54,20 +60,29 @@ class YamlLib:
                                                     "container": {
                                                         "imageUri": "imageUri",
                                                         "entrypoint": "bash",
-                                                        "commands": ["-c", "full_command"],
-                                                        "volumes": [self.params.key_volume_path],
+                                                        "commands": [
+                                                            "-c",
+                                                            "full_command",
+                                                        ],
+                                                        "volumes": [
+                                                            self.params.key_volume_path
+                                                        ],
                                                     },
                                                     "environment": {
                                                         "variables": {
                                                             "GCP_KEY_PATH": self.params.key_path,
-                                                            "GCP_PROJECT": "dataops" "-test" "-project",
+                                                            "GCP_PROJECT": "dataops"
+                                                            "-test"
+                                                            "-project",
                                                         }
                                                     },
                                                 }
                                             ],
                                         }
                                     },
-                                    "logsPolicy": {"destination": "CLOUD_LOGGING"},
+                                    "logsPolicy": {
+                                        "destination": "CLOUD_LOGGING"
+                                    },
                                 },
                             },
                             "result": "createAndRunBatchJobResponse",
@@ -76,7 +91,10 @@ class YamlLib:
                     {
                         "getJob": {
                             "call": "http.get",
-                            "args": {"url": '${batchApiUrl + "/" + jobId}', "auth": {"type": "OAuth2"}},
+                            "args": {
+                                "url": '${batchApiUrl + "/" + jobId}',
+                                "auth": {"type": "OAuth2"},
+                            },
                             "result": "getJobResult",
                         }
                     },
@@ -112,7 +130,9 @@ class YamlLib:
                     self.branch_number += 1
                     branch_name = "branch" + str(self.branch_number)
                     tasks = self.create_tasks_yaml_list(branch)
-                    parallel_structure["parallel"]["branches"].append({branch_name: {"steps": tasks}})
+                    parallel_structure["parallel"]["branches"].append(
+                        {branch_name: {"steps": tasks}}
+                    )
                 pass
             elif isinstance(task_branch, Task):
                 result.update(task_branch.create_yml())
@@ -124,5 +144,8 @@ class YamlLib:
         return result
 
     def create_workflow(self, tasks, job_list):
-        flow_yaml_desc = {self.create_mainflow(job_list, tasks), self.subworkflow()}
+        flow_yaml_desc = {
+            self.create_mainflow(job_list, tasks),
+            self.subworkflow(),
+        }
         return flow_yaml_desc

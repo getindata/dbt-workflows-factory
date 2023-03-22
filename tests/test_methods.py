@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from src.dbt_workflows_converter.dag_factory.dag_factory import DbtManifestParser
+from src.dbt_workflows_converter.dag_factory.dag_factory import (
+    DbtManifestParser,
+)
 from src.dbt_workflows_converter.flow_builder import FlowBuilder
 
 
@@ -19,10 +21,22 @@ def test_parser_test():
     assert (
         G.edges,
         [
-            ("model.pipeline_example.orders", "model.pipeline_example.supplier_parts"),
-            ("model.pipeline_example.orders", "model.pipeline_example.all_europe_region_countries"),
-            ("model.pipeline_example.supplier_parts", "model.pipeline_example.report"),
-            ("model.pipeline_example.all_europe_region_countries", "model.pipeline_example.report"),
+            (
+                "model.pipeline_example.orders",
+                "model.pipeline_example.supplier_parts",
+            ),
+            (
+                "model.pipeline_example.orders",
+                "model.pipeline_example.all_europe_region_countries",
+            ),
+            (
+                "model.pipeline_example.supplier_parts",
+                "model.pipeline_example.report",
+            ),
+            (
+                "model.pipeline_example.all_europe_region_countries",
+                "model.pipeline_example.report",
+            ),
         ],
     )
     assert (G.number_of_nodes, 4)

@@ -1,6 +1,13 @@
 class Params:
     def __init__(
-        self, image_uri: str, region: str, full_command, remote_path, key_volume_mount_path, key_volume_path, key_path
+        self,
+        image_uri: str,
+        region: str,
+        full_command,
+        remote_path,
+        key_volume_mount_path,
+        key_volume_path,
+        key_path,
     ):
         self.image_uri = image_uri
         self.region = region
