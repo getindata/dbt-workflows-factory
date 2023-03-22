@@ -1,10 +1,11 @@
-from dbt_workflows_converter.params import Params
-from dbt_workflows_converter.task_builder import Task
+from src.dbt_workflows_converter.params import Params
+from src.dbt_workflows_converter.task_builder import Task
 
 
 class YamlLib:
     def __init__(self, params: Params):
         self.params = params
+        self.branch_number = 0
 
     def init_workflow(self):
         workflow_init = {
@@ -19,6 +20,7 @@ class YamlLib:
                         'region + "/jobs"}'
                     },
                     {"containerEntrypoint": "bash"},
+                    {"imageUri": self.params.image_uri},
                 ]
             }
         }
@@ -57,7 +59,7 @@ class YamlLib:
                                                     },
                                                     "environment": {
                                                         "variables": {
-                                                            "GCP_KEY_PATH": "keypath",
+                                                            "GCP_KEY_PATH": self.params.key_path,
                                                             "GCP_PROJECT": "dataops" "-test" "-project",
                                                         }
                                                     },
@@ -84,7 +86,6 @@ class YamlLib:
 
     def create_init(self, job_names: "list[str]"):
         workflow_init = self.init_workflow()
-        workflow_init["init"]["assign"].append({"imageUri": self.params.image_uri})
         if job_names is not None:
             for task in job_names:
                 taskid = '${"' + task.lower() + '" + string(int(sys.now()))}'
@@ -92,11 +93,7 @@ class YamlLib:
         return workflow_init
 
     def subworkflow(self):
-        subworkflow = self.subworkflow_definition_yaml()
-        subworkflow["subworkflowBatchJob"]["steps"][1]["createAndRunBatchJob"]["args"]["body"]["taskGroups"][
-            "taskSpec"
-        ]["runnables"][0]["environment"]["variables"]["GCP_KEY_PATH"] = self.params.key_path
-        return subworkflow
+        return self.subworkflow_definition_yaml()
 
     def create_mainflow(self, job_names: "list[str]", tasks):
         init = self.create_init(job_names)
@@ -105,12 +102,27 @@ class YamlLib:
         res["main"]["steps"].append(tasks)
         return res
 
-    def create_tasks_yaml_list(self, tasks: "list[Task]"):
-        pass
+    def create_tasks_yaml_list(self, tasks_structure):
+        result = {}
+        for task_branch in tasks_structure:
+            # Singular task
+            if isinstance(task_branch, list):
+                parallel_structure = {"parallel": {"branches": []}}
+                for branch in task_branch:
+                    self.branch_number += 1
+                    branch_name = "branch" + str(self.branch_number)
+                    tasks = self.create_tasks_yaml_list(branch)
+                    parallel_structure["parallel"]["branches"].append({branch_name: {"steps": tasks}})
+                pass
+            elif isinstance(task_branch, Task):
+                result.update(task_branch.create_yml())
+                pass
+            else:
+                raise Exception("An unexpected type occurred")
+            pass
+
+        return result
 
     def create_workflow(self, tasks, job_list):
-        flow_yaml_desc = {
-            "main": self.create_mainflow(job_list, tasks)["main"],
-            "subworkflowBatchJob": self.subworkflow()["subworkflowBatchJob"],
-        }
+        flow_yaml_desc = {self.create_mainflow(job_list, tasks), self.subworkflow()}
         return flow_yaml_desc
