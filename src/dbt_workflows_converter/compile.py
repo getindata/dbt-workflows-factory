@@ -62,7 +62,9 @@ def convert(
     #     'key_volume_path': key_volume_path,
     #     'key_path': key_path,
     # }
-    converter = DbtWorkflowsConverter(manifest_path=manifest_file, params=params)
+    converter = DbtWorkflowsConverter(
+        manifest_path=manifest_file, params=params
+    )
     converter.convert()  # writes to file workflow.yaml
 
 
