@@ -1,5 +1,5 @@
 class Task:
-    def __init__(self, job_name: str, params: 'dict'):
+    def __init__(self, job_name: str, params: "dict"):
         self.job_id = job_name
         self.command = params["task_command"]
         self.job_name = params["task_alias"]
