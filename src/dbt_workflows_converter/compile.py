@@ -2,6 +2,7 @@ import click
 from dbt_workflows_converter import DbtWorkflowsConverter
 from params import Params
 
+
 @click.command()
 @click.argument('manifest_file', type=click.Path(exists=True))
 @click.option('--image-uri', type=str, help='Docker image URI', required=True)
