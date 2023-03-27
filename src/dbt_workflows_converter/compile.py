@@ -66,5 +66,5 @@ def convert(
     converter.convert()  # writes to file workflow.yaml
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     convert()
