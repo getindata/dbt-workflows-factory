@@ -6,12 +6,12 @@ with open("README.md") as f:
     README = f.read()
 
 # Runtime Requirements.
-INSTALL_REQUIRES = [
-    "pytimeparse==1.1.8",
-    "networkx==2.6.3",
-    "jsonschema==3.2.0",
-    "click==8.1.3",
-]
+# INSTALL_REQUIRES = [
+#     "pytimeparse==1.1.8",
+#     "networkx==2.6.3",
+#     "jsonschema==3.2.0",
+#     "click==8.1.3",
+# ]
 
 # Dev Requirements
 EXTRA_REQUIRE = {
@@ -39,20 +39,18 @@ setup(
     description="Library to convert DBT manifest metadata to Workflows tasks",
     long_description=README,
     long_description_content_type="text/markdown",
-    license="Apache Software License (Apache 2.0)",
     python_requires=">=3",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
-    keywords="dbt workflows manifest parser python",
     author="Anita Sledz",
     author_email="piotr.pekala@getindata.com",
     url="https://github.com/getindata/dbt-airflow-factory/",
     packages=find_packages(exclude=["ez_setup", "examples", "tests", "docs"]),
     include_package_data=True,
     zip_safe=False,
-    install_requires=INSTALL_REQUIRES,
+    # install_requires=INSTALL_REQUIRES,
     extras_require=EXTRA_REQUIRE,
 )
