@@ -61,7 +61,6 @@ class FlowBuilder:
             else:
                 path_list.append(paths[0])
 
-
         self.clear_structure(path_list)
 
         return path_list
