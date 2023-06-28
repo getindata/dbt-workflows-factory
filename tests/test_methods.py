@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from src.dbt_workflows_factory.dag_factory.dag_factory import (
-    DbtManifestParser,
-)
+from src.dbt_workflows_factory.dag_factory.dag_factory import DbtManifestParser
 from src.dbt_workflows_factory.flow_builder import FlowBuilder
 
 

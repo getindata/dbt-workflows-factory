@@ -36,24 +36,13 @@ class FlowBuilder:
                         del t[-1]
 
     def create_task_structure(self):
-        source_nodes = [
-            node
-            for node in self.graph.nodes()
-            if self.graph.in_degree(node) == 0
-        ]
-        sink_nodes = [
-            node
-            for node in self.graph.nodes()
-            if self.graph.out_degree(node) == 0
-        ]
+        source_nodes = [node for node in self.graph.nodes() if self.graph.in_degree(node) == 0]
+        sink_nodes = [node for node in self.graph.nodes() if self.graph.out_degree(node) == 0]
 
         if len(sink_nodes) != 1:
             raise ValueError("Manifest DAG must have exactly one sink node")
         sink_node = sink_nodes[0]
-        path_list = [
-            Task(source_node, self.graph.nodes[source_node])
-            for source_node in source_nodes
-        ]
+        path_list = [Task(source_node, self.graph.nodes[source_node]) for source_node in source_nodes]
         for source_node in source_nodes:
             paths = self.find_paths(source_node, sink_node)
             if len(paths) > 1:

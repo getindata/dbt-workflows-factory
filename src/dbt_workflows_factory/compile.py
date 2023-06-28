@@ -13,9 +13,7 @@ from params import Params
     help="Full command to run in container",
     required=True,
 )
-@click.option(
-    "--remote-path", type=str, help="Path to remote file", required=True
-)
+@click.option("--remote-path", type=str, help="Path to remote file", required=True)
 @click.option(
     "--key-volume-mount-path",
     type=str,
@@ -62,9 +60,7 @@ def convert(
     #     'key_volume_path': key_volume_path,
     #     'key_path': key_path,
     # }
-    converter = DbtWorkflowsConverter(
-        manifest_path=manifest_file, params=params
-    )
+    converter = DbtWorkflowsConverter(manifest_path=manifest_file, params=params)
     converter.convert()  # writes to file workflow.yaml
 
 

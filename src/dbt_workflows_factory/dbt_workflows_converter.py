@@ -1,10 +1,8 @@
 import yaml
-from dag_factory.dag_factory import (
-    DbtManifestParser,
-)
+from dag_factory.dag_factory import DbtManifestParser
+from flow_builder import FlowBuilder
 from params import Params
 from yaml_builder import YamlLib
-from flow_builder import FlowBuilder
 
 
 class DbtWorkflowsConverter:
@@ -24,9 +22,7 @@ class DbtWorkflowsConverter:
         self.parser = DbtManifestParser()
 
     def create(self):
-        self.dag = self.parser.parse_manifest(
-            manifest_file_path=self.manifest_path
-        )
+        self.dag = self.parser.parse_manifest(manifest_file_path=self.manifest_path)
         self.yaml_builder = YamlLib(self.params)
         self.flow_builder = FlowBuilder(self.dag)
 
