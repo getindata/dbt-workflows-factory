@@ -1,5 +1,5 @@
 import networkx as nx
-from task_builder import Task
+from .task_builder import Task
 
 
 class FlowBuilder:

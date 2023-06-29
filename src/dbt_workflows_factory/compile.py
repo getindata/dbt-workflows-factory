@@ -1,6 +1,6 @@
 import click
-from dbt_workflows_converter import DbtWorkflowsConverter
-from params import Params
+from .dbt_workflows_converter import DbtWorkflowsConverter
+from .params import Params
 
 
 @click.command()

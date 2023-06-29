@@ -15,12 +15,14 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11"
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 dependencies = [
-    "dbt-graph-builder>=0.1.0",
+    "dbt-graph-builder>=0.3.0",
 ]
 license = {file = "LICENSE"}
 dynamic = ["version"]

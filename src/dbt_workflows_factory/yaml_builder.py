@@ -1,5 +1,5 @@
-from params import Params
-from task_builder import Task
+from .params import Params
+from .task_builder import Task
 
 
 class YamlLib:

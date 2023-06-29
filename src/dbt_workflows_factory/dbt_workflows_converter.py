@@ -1,8 +1,8 @@
 import yaml
-from dag_factory.dag_factory import DbtManifestParser
-from flow_builder import FlowBuilder
-from params import Params
-from yaml_builder import YamlLib
+from .dag_factory.dag_factory import DbtManifestParser
+from .flow_builder import FlowBuilder
+from .params import Params
+from .yaml_builder import YamlLib
 
 
 class DbtWorkflowsConverter:

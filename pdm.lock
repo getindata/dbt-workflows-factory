@@ -32,11 +32,11 @@ dependencies = [
 
 [[package]]
 name = "dbt-graph-builder"
-version = "0.1.1"
-requires_python = ">=3.10"
+version = "0.3.0"
+requires_python = ">=3.8"
 summary = "DBT Graph Builder"
 dependencies = [
-    "networkx>=2.6.3",
+    "networkx<3,>=2.6",
 ]
 
 [[package]]
@@ -76,7 +76,7 @@ summary = "brain-dead simple config-ini parsing"
 
 [[package]]
 name = "networkx"
-version = "3.1"
+version = "2.8.8"
 requires_python = ">=3.8"
 summary = "Python package for creating and manipulating graphs and networks"
 
@@ -196,7 +196,7 @@ dependencies = [
 lock_version = "4.2"
 cross_platform = true
 groups = ["default", "dev"]
-content_hash = "sha256:0325e08d0edacbd393bdd294323a5133a53a04ea05e20803c389ed7858774d52"
+content_hash = "sha256:a85f4d07cabf79440c47f49e60707c47dc98b29f2e7421d47b646c926a8c8d51"
 
 [metadata.files]
 "cfgv 3.3.1" = [
@@ -269,9 +269,9 @@ content_hash = "sha256:0325e08d0edacbd393bdd294323a5133a53a04ea05e20803c389ed785
     {url = "https://files.pythonhosted.org/packages/fe/57/e4f8ad64d84ca9e759d783a052795f62a9f9111585e46068845b1cb52c2b/coverage-7.2.7-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6f48351d66575f535669306aa7d6d6f71bc43372473b54a832222803eb956fd1"},
     {url = "https://files.pythonhosted.org/packages/ff/d5/52fa1891d1802ab2e1b346d37d349cb41cdd4fd03f724ebbf94e80577687/coverage-7.2.7-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:f2f67fe12b22cd130d34d0ef79206061bfb5eda52feb6ce0dba0644e20a03cf4"},
 ]
-"dbt-graph-builder 0.1.1" = [
-    {url = "https://files.pythonhosted.org/packages/1c/a4/521f00f46c628479b40638f8d758c9730760df06a6045d39d6d906b820c6/dbt-graph-builder-0.1.1.tar.gz", hash = "sha256:0ebe37764510a8b46ea1df016968191829a4fa1fd77d95c8686b9666927bc7cf"},
-    {url = "https://files.pythonhosted.org/packages/96/c6/83eda68cd2909f7d611b956facf4774cdb51701ff759ac5226f9373e6baf/dbt_graph_builder-0.1.1-py3-none-any.whl", hash = "sha256:e97e93efc8e9ee482c351180d7ac12156d5eb2a5b5c37cb594ae260217505291"},
+"dbt-graph-builder 0.3.0" = [
+    {url = "https://files.pythonhosted.org/packages/37/7a/570c4403cc0d5c2eed8908790ffb7a6bf9fca0e314f888a418dd316b7c6e/dbt_graph_builder-0.3.0-py3-none-any.whl", hash = "sha256:02ebf9c64c1234b59a52b863498a483f2fef521f4a58828f565445014f89818f"},
+    {url = "https://files.pythonhosted.org/packages/7c/1c/8dda4fc71fe4c8179a2d376d93d7b944e67d5f584edca2671e05024f84d9/dbt-graph-builder-0.3.0.tar.gz", hash = "sha256:c9aaf49b974f4cbd8dc747d206a06fb61a4789a43cfd4f6cae621a40b29d8b9d"},
 ]
 "distlib 0.3.6" = [
     {url = "https://files.pythonhosted.org/packages/58/07/815476ae605bcc5f95c87a62b95e74a1bce0878bc7a3119bc2bf4178f175/distlib-0.3.6.tar.gz", hash = "sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46"},
@@ -297,9 +297,9 @@ content_hash = "sha256:0325e08d0edacbd393bdd294323a5133a53a04ea05e20803c389ed785
     {url = "https://files.pythonhosted.org/packages/d7/4b/cbd8e699e64a6f16ca3a8220661b5f83792b3017d0f79807cb8708d33913/iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
     {url = "https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
 ]
-"networkx 3.1" = [
-    {url = "https://files.pythonhosted.org/packages/a8/05/9d4f9b78ead6b2661d6e8ea772e111fc4a9fbd866ad0c81906c11206b55e/networkx-3.1-py3-none-any.whl", hash = "sha256:4f33f68cb2afcf86f28a45f43efc27a9386b535d567d2127f8f61d51dec58d36"},
-    {url = "https://files.pythonhosted.org/packages/fd/a1/47b974da1a73f063c158a1f4cc33ed0abf7c04f98a19050e80c533c31f0c/networkx-3.1.tar.gz", hash = "sha256:de346335408f84de0eada6ff9fafafff9bcda11f0a0dfaa931133debb146ab61"},
+"networkx 2.8.8" = [
+    {url = "https://files.pythonhosted.org/packages/42/31/d2f89f1ae42718f8c8a9e440ebe38d7d5fe1e0d9eb9178ce779e365b3ab0/networkx-2.8.8-py3-none-any.whl", hash = "sha256:e435dfa75b1d7195c7b8378c3859f0445cd88c6b0375c181ed66823a9ceb7524"},
+    {url = "https://files.pythonhosted.org/packages/cd/16/c44e8550012735b8f21b3df7f39e8ba5a987fb764ac017ad5f3589735889/networkx-2.8.8.tar.gz", hash = "sha256:230d388117af870fce5647a3c52401fcf753e94720e6ea6b4197a5355648885e"},
 ]
 "nodeenv 1.8.0" = [
     {url = "https://files.pythonhosted.org/packages/1a/e6/6d2ead760a9ddb35e65740fd5a57e46aadd7b0c49861ab24f94812797a1c/nodeenv-1.8.0-py2.py3-none-any.whl", hash = "sha256:df865724bb3c3adc86b3876fa209771517b0cfe596beff01a92700e0e8be4cec"},

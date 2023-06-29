@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.8"]
     steps:
       - uses: actions/checkout@v3
       - uses: pdm-project/setup-pdm@v3
@@ -32,18 +32,18 @@ jobs:
           part = sys.argv[1]
           with open('VERSION', 'r') as file:
             version = file.read().strip().split('.')
-          match part:
-            case 'patch':
-              version[2] = str(int(version[2]) + 1)
-            case 'minor':
-              version[1] = str(int(version[1]) + 1)
-              version[2] = '0'
-            case 'major':
-              version[0] = str(int(version[0]) + 1)
-              version[1] = '0'
-              version[2] = '0'
+          if part == 'patch':
+            version[2] = str(int(version[2]) + 1)
+          elif part == 'minor':
+            version[1] = str(int(version[1]) + 1)
+            version[2] = '0'
+          elif part == 'major':
+            version[0] = str(int(version[0]) + 1)
+            version[1] = '0'
+            version[2] = '0'
           with open('VERSION', 'w') as file:
             file.write('.'.join(version))
+            file.write('\n')
           " ${{ github.event.inputs.version_part }}
           echo "::set-output name=package_version::$(pdm show --version)"
       - name: Update the CHANGELOG according to 'Keep a Changelog' guidelines
@@ -61,9 +61,8 @@ jobs:
         id: open_pr
         uses: vsoch/pull-request-action@1.0.24
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CI_PERSONAL_ACCESS_TOKEN }}
           PULL_REQUEST_BRANCH: main
           PULL_REQUEST_FROM_BRANCH: release/${{ steps.bump_version.outputs.package_version }}
           PULL_REQUEST_TITLE: "Release ${{ steps.bump_version.outputs.package_version }}"
           PULL_REQUEST_BODY: "Bump version and CHANGELOG for next release."
-          PULL_REQUEST_ASSIGNEES: " p-pekala"

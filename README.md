@@ -1,6 +1,6 @@
 # dbt-workflows-converter
 
-[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue)](https://github.com/getindata/dbt-workflows-converter)
+[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)](https://github.com/getindata/dbt-workflows-converter)
 [![PyPI Version](https://badge.fury.io/py/dbt-workflows-converter.svg)](https://pypi.org/project/dbt-workflows-converter/)
 [![Downloads](https://pepy.tech/badge/dbt-workflows-converter)](https://pepy.tech/project/dbt-workflows-converter)
 [![Maintainability](https://api.codeclimate.com/v1/badges/e44ed9383a42b59984f6/maintainability)](https://codeclimate.com/github/getindata/dbt-workflows-converter/maintainability)
