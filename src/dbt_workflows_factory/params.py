@@ -1,18 +1,13 @@
-class Params:
-    def __init__(
-        self,
-        image_uri: str,
-        region: str,
-        full_command,
-        remote_path,
-        key_volume_mount_path,
-        key_volume_path,
-        key_path,
-    ):
-        self.image_uri = image_uri
-        self.region = region
-        self.full_command = full_command
-        self.remote_path = remote_path
-        self.key_volume_mount_path = key_volume_mount_path
-        self.key_volume_path = key_volume_path
-        self.key_path = key_path
+from __future__ import annotations
+
+from typing import NamedTuple
+
+
+class Params(NamedTuple):
+    image_uri: str
+    region: str
+    full_command: str
+    remote_path: str
+    key_volume_mount_path: str
+    key_volume_path: str
+    key_path: str

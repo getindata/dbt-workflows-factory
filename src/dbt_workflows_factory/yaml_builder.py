@@ -1,18 +1,122 @@
+from __future__ import annotations
+
+from typing import Any
+
 from .params import Params
 from .task_builder import Task
 
 
 class YamlLib:
     def __init__(self, params: Params):
-        self.params = params
-        self.branch_number = 0
+        self._params = params
+        self._branch_number = 0
 
-    def init_workflow(self):
-        workflow_init = {
+    @property
+    def subwork_batch_job_init(self) -> dict[str, Any]:
+        return {"init": {"assign": [{"fullcomand": self._params.full_command}]}}
+
+    @property
+    def subwork_batch_job_main(self) -> dict[str, Any]:
+        return {
+            "createAndRunBatchJob": {
+                "call": "http.post",
+                "args": self.subwork_batch_job_main_args,
+                "result": "createAndRunBatchJobResponse",
+            }
+        }
+
+    @property
+    def subwork_batch_job_main_args(self) -> dict[str, Any]:
+        return {
+            "url": "${batchApiUrl}",
+            "query": {"job_id": "${jobId}"},
+            "headers": {"Content-Type": "application/json"},
+            "auth": {"type": "OAuth2"},
+            "body": {
+                "taskGroups": {
+                    "taskSpec": {
+                        "volumes": self.subwork_batch_job_main_args_volumes,
+                        "runnables": self.subwork_batch_job_main_args_runnables,
+                    }
+                },
+                "logsPolicy": {"destination": "CLOUD_LOGGING"},
+            },
+        }
+
+    @property
+    def subwork_batch_job_main_args_runnables(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "container": {
+                    "imageUri": "imageUri",
+                    "entrypoint": "bash",
+                    "commands": ["-c", "full_command"],
+                    "volumes": [self._params.key_volume_path],
+                },
+                "environment": {
+                    "variables": {
+                        "GCP_KEY_PATH": self._params.key_path,
+                        "GCP_PROJECT": "dataops" "-test" "-project",
+                    }
+                },
+            }
+        ]
+
+    @property
+    def subwork_batch_job_main_args_volumes(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "gcs": {"remotePath": self._params.remote_path},
+                "mountPath": self._params.key_volume_mount_path,
+            }
+        ]
+
+    @property
+    def subwork_batch_job_get(self) -> dict[str, Any]:
+        return {
+            "getJob": {
+                "call": "http.get",
+                "args": {
+                    "url": '${batchApiUrl + "/" + jobId}',
+                    "auth": {"type": "OAuth2"},
+                },
+                "result": "getJobResult",
+            }
+        }
+
+    @property
+    def subworkflow(self):
+        return {
+            "params": self.subworkflow_batch_job_params,
+            "steps": self.subworkflow_batch_job_steps,
+        }
+
+    @property
+    def subworkflow_batch_job_steps(self) -> list[dict[str, Any]]:
+        return [
+            self.subwork_batch_job_init,
+            self.subwork_batch_job_main,
+            self.subwork_batch_job_get,
+        ]
+
+    @property
+    def subworkflow_batch_job_params(self) -> list[str]:
+        return ["batchApiUrl", "command", "jobId", "imageUri"]
+
+    def mainflow_steps(self, job_names: list[str], steps):
+        return {
+            "steps": [
+                self.init_step(job_names),
+                steps,
+            ]
+        }
+
+    def init_step(self, job_names: list[str]) -> dict[str, Any]:
+        return {
             "init": {
                 "assign": [
                     {"projectId": '${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'},
-                    {"region": self.params.region},
+                    {"region": self._params.region},
                     {"batchApi": "batch.googleapis.com/v1"},
                     {
                         "batchApiUrl": '${"https://" + batchApi + "/projects/" + projectId + '
@@ -20,93 +124,11 @@ class YamlLib:
                         'region + "/jobs"}'
                     },
                     {"containerEntrypoint": "bash"},
-                    {"imageUri": self.params.image_uri},
+                    {"imageUri": self._params.image_uri},
+                    *[{task_name: f"${{{task_name.lower()} + string(int(sys.now()))}}"} for task_name in job_names],
                 ]
             }
         }
-        return workflow_init
-
-    def subworkflow_definition_yaml(self):
-        return {
-            "subworkflowBatchJob": {
-                "params": ["batchApiUrl", "command", "jobId", "imageUri"],
-                "steps": [
-                    {"init": {"assign": [{"fullcomand": self.params.full_command}]}},
-                    {
-                        "createAndRunBatchJob": {
-                            "call": "http.post",
-                            "args": {
-                                "url": "${batchApiUrl}",
-                                "query": {"job_id": "${jobId}"},
-                                "headers": {"Content-Type": "application/json"},
-                                "auth": {"type": "OAuth2"},
-                                "body": {
-                                    "taskGroups": {
-                                        "taskSpec": {
-                                            "volumes": [
-                                                {
-                                                    "gcs": {"remotePath": self.params.remote_path},
-                                                    "mountPath": self.params.key_volume_mount_path,
-                                                }
-                                            ],
-                                            "runnables": [
-                                                {
-                                                    "container": {
-                                                        "imageUri": "imageUri",
-                                                        "entrypoint": "bash",
-                                                        "commands": [
-                                                            "-c",
-                                                            "full_command",
-                                                        ],
-                                                        "volumes": [self.params.key_volume_path],
-                                                    },
-                                                    "environment": {
-                                                        "variables": {
-                                                            "GCP_KEY_PATH": self.params.key_path,
-                                                            "GCP_PROJECT": "dataops" "-test" "-project",
-                                                        }
-                                                    },
-                                                }
-                                            ],
-                                        }
-                                    },
-                                    "logsPolicy": {"destination": "CLOUD_LOGGING"},
-                                },
-                            },
-                            "result": "createAndRunBatchJobResponse",
-                        }
-                    },
-                    {
-                        "getJob": {
-                            "call": "http.get",
-                            "args": {
-                                "url": '${batchApiUrl + "/" + jobId}',
-                                "auth": {"type": "OAuth2"},
-                            },
-                            "result": "getJobResult",
-                        }
-                    },
-                ],
-            }
-        }
-
-    def create_init(self, job_names: "list[str]"):
-        workflow_init = self.init_workflow()
-        if job_names is not None:
-            for task in job_names:
-                taskid = '${"' + task.lower() + '" + string(int(sys.now()))}'
-                workflow_init["init"]["assign"].append({task: taskid})
-        return workflow_init
-
-    def subworkflow(self):
-        return self.subworkflow_definition_yaml()
-
-    def create_mainflow(self, job_names: "list[str]", tasks):
-        init = self.create_init(job_names)
-        res = {"main": {"steps": []}}
-        res["main"]["steps"].append(init)
-        res["main"]["steps"].append(tasks)
-        return res
 
     def create_tasks_yaml_list(self, tasks_structure):
         result = {}
@@ -115,8 +137,8 @@ class YamlLib:
             if isinstance(task_branch, list):
                 parallel_structure = {"parallel": {"branches": []}}
                 for branch in task_branch:
-                    self.branch_number += 1
-                    branch_name = "branch" + str(self.branch_number)
+                    self._branch_number += 1
+                    branch_name = "branch" + str(self._branch_number)
                     tasks = self.create_tasks_yaml_list(branch)
                     parallel_structure["parallel"]["branches"].append({branch_name: {"steps": tasks}})
                 pass
@@ -129,9 +151,8 @@ class YamlLib:
 
         return result
 
-    def create_workflow(self, tasks, job_list):
-        flow_yaml_desc = {
-            "main": self.create_mainflow(job_list, tasks)["main"],
-            "subworkflowBatchJob": self.subworkflow()["subworkflowBatchJob"],
+    def create_workflow(self, steps, job_list):
+        return {
+            "main": self.mainflow_steps(job_list, steps),
+            "subworkflowBatchJob": self.subworkflow,
         }
-        return flow_yaml_desc

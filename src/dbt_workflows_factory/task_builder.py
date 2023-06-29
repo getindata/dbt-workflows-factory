@@ -1,21 +1,24 @@
+from __future__ import annotations
+
+from typing import Any
+
+
 class Task:
-    def __init__(self, job_name: str, params: "dict"):
-        self.job_id = job_name
-        self.command = params["task_command"]
-        self.job_name = params["task_alias"]
+    def __init__(self, job_name: str, params: dict[str, Any]):
+        self._job_name = job_name
+        self._task_command = params["task_command"]
+        self._task_alias = params["task_alias"]
 
     def create_yml(self):
-        job_id = "${" + self.job_id + "}"
-        result = {
-            self.job_name: {
+        return {
+            self._task_alias: {
                 "call": "subworkflowBatchJob",
                 "args": {
                     "batchApiUrl": "${batchApiUrl}",
-                    "command": self.command,
-                    "jobId": self.job_id,
+                    "command": self._task_command,
+                    "jobId": self._job_name,
                     "imageUri": "${imageUri}",
                 },
-                "result": job_id + "Result",
+                "result": "${" + self._job_name + "}Result",
             }
         }
-        return result

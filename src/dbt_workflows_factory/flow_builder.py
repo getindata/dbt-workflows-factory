@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import networkx as nx
+
 from .task_builder import Task
 
 

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import click
+
 from .dbt_workflows_converter import DbtWorkflowsConverter
 from .params import Params
 
