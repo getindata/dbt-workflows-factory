@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
-
+from dataclasses import dataclass
+from typing import Any
 
 
 class Task(ABC):
@@ -39,7 +38,6 @@ class SingleTask(Task):
                 "result": f"${{{self.job_id}}}Result",
             }
         }
-
 
 
 @dataclass

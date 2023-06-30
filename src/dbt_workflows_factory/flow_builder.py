@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dbt_graph_builder.builder import DbtManifestGraph
 from networkx.classes.reportviews import NodeView
+
 from .task import SingleTask, Task
 
 
@@ -19,7 +20,9 @@ class FlowBuilder:
         if len(sink_nodes) != 1:
             raise ValueError("Manifest DAG must have exactly one sink node")
         sink_node = sink_nodes[0]
-        path_list: list[Task | list[Task]] = [SingleTask.from_node(source_node, self._graph.graph.nodes[source_node]) for source_node in source_nodes]
+        path_list: list[Task | list[Task]] = [
+            SingleTask.from_node(source_node, self._graph.graph.nodes[source_node]) for source_node in source_nodes
+        ]
         for source_node in source_nodes:
             paths = self._find_paths(source_node, sink_node)
             if len(paths) > 1:
