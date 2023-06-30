@@ -1,29 +1,36 @@
 from __future__ import annotations
 
-import networkx as nx
-
+from dbt_graph_builder.builder import DbtManifestGraph
+from networkx.classes.reportviews import NodeView
 from .task_builder import Task
 
 
 class FlowBuilder:
-    def __init__(self, task_graph: nx.DiGraph):
-        self.graph = task_graph
+    def __init__(self, graph: DbtManifestGraph):
+        self._graph = graph
 
-    def create_task_list(self, graph):
-        return graph.nodes()
+    def create_task_list(self) -> NodeView:
+        return self._graph.get_graph_nodes()
 
-    def find_paths(self, node, sink_node):
-        if node == sink_node:
-            return [[Task(node, self.graph.nodes[node])]]
-        paths = []
-        next_nodes = self.graph.successors(node)
-        for next_node in next_nodes:
-            next_paths = self.find_paths(next_node, sink_node)
-            for path in next_paths:
-                paths.append([Task(node, self.graph.nodes[node])] + path)
-        return paths
+    def create_task_structure(self):
+        source_nodes = self._graph.get_graph_sources()
+        sink_nodes = self._graph.get_graph_sinks()
 
-    def clear_structure(self, structure):
+        if len(sink_nodes) != 1:
+            raise ValueError("Manifest DAG must have exactly one sink node")
+        sink_node = sink_nodes[0]
+        path_list: list[Task | list[Task]] = [Task(source_node, self._graph.graph.nodes[source_node]) for source_node in source_nodes]
+        for source_node in source_nodes:
+            paths = self._find_paths(source_node, sink_node)
+            if len(paths) > 1:
+                path_list.append(paths)
+            else:
+                path_list.append(paths[0])
+
+        self._clear_structure(path_list)
+        return path_list
+
+    def _clear_structure(self, structure: list[Task | list[Task]]) -> None:
         for i in range(1, len(structure) - 1):
             branch = structure[i]
             if isinstance(branch, list):
@@ -38,21 +45,13 @@ class FlowBuilder:
                     elif last_id_in_branch == next_task_id:
                         del t[-1]
 
-    def create_task_structure(self):
-        source_nodes = [node for node in self.graph.nodes() if self.graph.in_degree(node) == 0]
-        sink_nodes = [node for node in self.graph.nodes() if self.graph.out_degree(node) == 0]
-
-        if len(sink_nodes) != 1:
-            raise ValueError("Manifest DAG must have exactly one sink node")
-        sink_node = sink_nodes[0]
-        path_list = [Task(source_node, self.graph.nodes[source_node]) for source_node in source_nodes]
-        for source_node in source_nodes:
-            paths = self.find_paths(source_node, sink_node)
-            if len(paths) > 1:
-                path_list.append(paths)
-            else:
-                path_list.append(paths[0])
-
-        self.clear_structure(path_list)
-
-        return path_list
+    def _find_paths(self, node: str, sink_node: str) -> list[list[Task]]:
+        if node == sink_node:
+            return [[Task(node, self._graph.graph.nodes[node])]]
+        paths: list[list[Task]] = []
+        next_nodes: list[str] = self._graph.graph.successors(node)
+        for next_node in next_nodes:
+            next_paths = self._find_paths(next_node, sink_node)
+            for path in next_paths:
+                paths.append([Task(node, self._graph.graph.nodes[node])] + path)
+        return paths

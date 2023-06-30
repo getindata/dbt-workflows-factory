@@ -54,17 +54,8 @@ def convert(
         key_volume_path=key_volume_path,
         key_path=key_path,
     )
-    # params = {
-    #     'image_uri': image_uri,
-    #     'region': region,
-    #     'full_command': full_command,
-    #     'remote_path': remote_path,
-    #     'key_volume_mount_path': key_volume_mount_path,
-    #     'key_volume_path': key_volume_path,
-    #     'key_path': key_path,
-    # }
     converter = DbtWorkflowsConverter(manifest_path=manifest_file, params=params)
-    converter.convert()  # writes to file workflow.yaml
+    converter.convert()
 
 
 if __name__ == "__main__":

@@ -4,10 +4,17 @@ from typing import Any
 
 
 class Task:
-    def __init__(self, job_name: str, params: dict[str, Any]):
-        self._job_name = job_name
-        self._task_command = params["task_command"]
-        self._task_alias = params["task_alias"]
+    def __init__(self, job_name: str, node_def: dict[str, Any]):
+        self._job_id = job_name
+        self._task_command = node_def["select"]
+        self._task_alias = node_def["alias"]
+
+    def __repr__(self) -> str:
+        return f'Task(job_name="{self.job_id}", node_def={{"select": "{self._task_command}", "alias": "{self._task_alias}"}})'
+
+    @property
+    def job_id(self) -> str:
+        return self._job_id
 
     def create_yml(self):
         return {
@@ -16,9 +23,9 @@ class Task:
                 "args": {
                     "batchApiUrl": "${batchApiUrl}",
                     "command": self._task_command,
-                    "jobId": self._job_name,
+                    "jobId": self.job_id,
                     "imageUri": "${imageUri}",
                 },
-                "result": "${" + self._job_name + "}Result",
+                "result": f"${{{self.job_id}}}Result",
             }
         }

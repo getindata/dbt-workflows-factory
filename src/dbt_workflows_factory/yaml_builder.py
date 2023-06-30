@@ -6,7 +6,7 @@ from .params import Params
 from .task_builder import Task
 
 
-class YamlLib:
+class TaskYamlBuilder:
     def __init__(self, params: Params):
         self._params = params
         self._branch_number = 0
@@ -103,14 +103,6 @@ class YamlLib:
     def subworkflow_batch_job_params(self) -> list[str]:
         return ["batchApiUrl", "command", "jobId", "imageUri"]
 
-    def mainflow_steps(self, job_names: list[str], steps):
-        return {
-            "steps": [
-                self.init_step(job_names),
-                steps,
-            ]
-        }
-
     def init_step(self, job_names: list[str]) -> dict[str, Any]:
         return {
             "init": {
@@ -130,7 +122,7 @@ class YamlLib:
             }
         }
 
-    def create_tasks_yaml_list(self, tasks_structure):
+    def create_tasks_yaml_list(self, tasks_structure) -> dict[str, Any]:
         result = {}
         for task_branch in tasks_structure:
             # Singular task
@@ -151,8 +143,13 @@ class YamlLib:
 
         return result
 
-    def create_workflow(self, steps, job_list):
+    def create_workflow(self, job_list: list[str], additional_step: dict[str, Any]) -> dict[str, Any]:
         return {
-            "main": self.mainflow_steps(job_list, steps),
+            "main": {
+                "steps": [
+                    self.init_step(job_list),
+                    additional_step,
+                ]
+            },
             "subworkflowBatchJob": self.subworkflow,
         }
