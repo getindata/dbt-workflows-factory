@@ -28,6 +28,6 @@ class DbtWorkflowsConverter:
         task_list = flow_builder.create_task_list()
         task_structure = flow_builder.create_task_structure()
         tasks_yaml = yaml_builder.create_tasks_yaml_list(task_structure)
-        result = yaml_builder.create_workflow([task[0] for task in task_list], tasks_yaml)
+        result = yaml_builder.create_workflow(task_list, tasks_yaml)
 
         return result

@@ -10,8 +10,8 @@ class FlowBuilder:
     def __init__(self, graph: DbtManifestGraph):
         self._graph = graph
 
-    def create_task_list(self) -> NodeView:
-        return self._graph.get_graph_nodes()
+    def create_task_list(self) -> list[str]:
+        return [task[0] for task in self._graph.get_graph_nodes()]
 
     def create_task_structure(self):
         source_nodes = self._graph.get_graph_sources()
