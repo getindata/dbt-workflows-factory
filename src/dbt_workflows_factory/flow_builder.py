@@ -32,10 +32,8 @@ class FlowBuilder:
 
     def _clear_structure(self, structure: list[Task | list[Task]]) -> None:
         for i in range(1, len(structure) - 1):
-            print("CALLED")
             branch = structure[i]
             if isinstance(branch, list):
-                print("IS BRANCH")
                 previous_task_id = structure[i - 1]
                 next_task_id = structure[i + 1]
 

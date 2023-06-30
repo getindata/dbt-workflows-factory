@@ -55,8 +55,7 @@ def convert(
         key_path=key_path,
     )
     converter = DbtWorkflowsConverter(manifest_path=manifest_file, params=params)
-    converter.convert()
-
+    print(converter.get_yaml())
 
 if __name__ == "__main__":
     convert()

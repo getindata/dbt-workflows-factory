@@ -44,7 +44,8 @@ class SingleTask(Task):
 
 @dataclass
 class TaskList(Task):
+    job_id: str
     tasks: list[SingleTask]
 
     def create_yml(self) -> dict[str, Any]:
-        return {task.task_alias: task.create_yml() for task in self.tasks}
+        return

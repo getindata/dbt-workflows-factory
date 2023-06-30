@@ -122,8 +122,8 @@ class TaskYamlBuilder:
             }
         }
 
-    def create_tasks_yaml_list(self, tasks_structure) -> dict[str, Any]:
-        result = {}
+    def create_tasks_yaml_list(self, tasks_structure) -> list[dict[str, Any]]:
+        result = []
         for task_branch in tasks_structure:
             # Singular task
             if isinstance(task_branch, list):
@@ -133,20 +133,20 @@ class TaskYamlBuilder:
                     branch_name = "branch" + str(self._branch_number)
                     tasks = self.create_tasks_yaml_list(branch)
                     parallel_structure["parallel"]["branches"].append({branch_name: {"steps": tasks}})
-                result.update({"parallelSteps": parallel_structure})
+                result.append({"parallelSteps": parallel_structure})
             elif isinstance(task_branch, Task):
-                result.update(task_branch.create_yml())
+                result.append(task_branch.create_yml())
             else:
                 raise Exception("An unexpected type occurred")
 
         return result
 
-    def create_workflow(self, job_list: list[str], additional_step: dict[str, Any]) -> dict[str, Any]:
+    def create_workflow(self, job_list: list[str], additional_steps: list[dict[str, Any]]) -> dict[str, Any]:
         return {
             "main": {
                 "steps": [
                     self.init_step(job_list),
-                    additional_step,
+                    *additional_steps,
                 ]
             },
             "subworkflowBatchJob": self.subworkflow,
