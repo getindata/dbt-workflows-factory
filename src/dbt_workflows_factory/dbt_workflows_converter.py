@@ -18,7 +18,6 @@ class DbtWorkflowsConverter:
         self._manifest_path = manifest_path
         self._workflows_path = workflows_path
         self._params = params
-
         self._parser = DbtManifestParser()
 
     def get_yaml(self):
@@ -28,14 +27,7 @@ class DbtWorkflowsConverter:
 
         task_list = flow_builder.create_task_list()
         task_structure = flow_builder.create_task_structure()
-
         tasks_yaml = yaml_builder.create_tasks_yaml_list(task_structure)
-
-        result = yaml_builder.create_workflow(task_list, tasks_yaml)
+        result = yaml_builder.create_workflow([task[0] for task in task_list], tasks_yaml)
 
         return result
-
-    def convert(self) -> None:
-        yaml_obj = self.create()
-        with open(self.workflows_yaml_name, "w") as file:
-            yaml.dump(self.get_yaml(), file)

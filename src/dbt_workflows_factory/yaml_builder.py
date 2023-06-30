@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from .params import Params
-from .task_builder import Task
+from .task import Task
 
 
 class TaskYamlBuilder:
@@ -111,9 +111,9 @@ class TaskYamlBuilder:
                     {"region": self._params.region},
                     {"batchApi": "batch.googleapis.com/v1"},
                     {
-                        "batchApiUrl": '${"https://" + batchApi + "/projects/" + projectId + '
-                        '"/locations/" + '
-                        'region + "/jobs"}'
+                        "batchApiUrl": (
+                            '${"https://" + batchApi + "/projects/" + projectId + "/locations/" + region + "/jobs"}'
+                        )
                     },
                     {"containerEntrypoint": "bash"},
                     {"imageUri": self._params.image_uri},
@@ -133,13 +133,11 @@ class TaskYamlBuilder:
                     branch_name = "branch" + str(self._branch_number)
                     tasks = self.create_tasks_yaml_list(branch)
                     parallel_structure["parallel"]["branches"].append({branch_name: {"steps": tasks}})
-                pass
+                result.update({"parallelSteps": parallel_structure})
             elif isinstance(task_branch, Task):
                 result.update(task_branch.create_yml())
-                pass
             else:
                 raise Exception("An unexpected type occurred")
-            pass
 
         return result
 

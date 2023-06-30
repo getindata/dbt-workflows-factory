@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dbt_graph_builder.builder import DbtManifestGraph
 from networkx.classes.reportviews import NodeView
-from .task_builder import Task
+from .task import SingleTask, Task
 
 
 class FlowBuilder:
@@ -19,39 +19,41 @@ class FlowBuilder:
         if len(sink_nodes) != 1:
             raise ValueError("Manifest DAG must have exactly one sink node")
         sink_node = sink_nodes[0]
-        path_list: list[Task | list[Task]] = [Task(source_node, self._graph.graph.nodes[source_node]) for source_node in source_nodes]
+        path_list: list[Task | list[Task]] = [SingleTask.from_node(source_node, self._graph.graph.nodes[source_node]) for source_node in source_nodes]
         for source_node in source_nodes:
             paths = self._find_paths(source_node, sink_node)
             if len(paths) > 1:
                 path_list.append(paths)
             else:
                 path_list.append(paths[0])
-
+        path_list.append(SingleTask.from_node(sink_node, self._graph.graph.nodes[sink_node]))
         self._clear_structure(path_list)
         return path_list
 
     def _clear_structure(self, structure: list[Task | list[Task]]) -> None:
         for i in range(1, len(structure) - 1):
+            print("CALLED")
             branch = structure[i]
             if isinstance(branch, list):
+                print("IS BRANCH")
                 previous_task_id = structure[i - 1]
                 next_task_id = structure[i + 1]
 
                 for t in branch:
                     first_id_in_branch = t[0].job_id
                     last_id_in_branch = t[-1].job_id
-                    if first_id_in_branch == previous_task_id:
+                    if first_id_in_branch == previous_task_id.job_id:
                         del t[0]
-                    elif last_id_in_branch == next_task_id:
+                    if last_id_in_branch == next_task_id.job_id:
                         del t[-1]
 
     def _find_paths(self, node: str, sink_node: str) -> list[list[Task]]:
         if node == sink_node:
-            return [[Task(node, self._graph.graph.nodes[node])]]
+            return [[SingleTask.from_node(node, self._graph.graph.nodes[node])]]
         paths: list[list[Task]] = []
         next_nodes: list[str] = self._graph.graph.successors(node)
         for next_node in next_nodes:
             next_paths = self._find_paths(next_node, sink_node)
             for path in next_paths:
-                paths.append([Task(node, self._graph.graph.nodes[node])] + path)
+                paths.append([SingleTask.from_node(node, self._graph.graph.nodes[node])] + path)
         return paths
