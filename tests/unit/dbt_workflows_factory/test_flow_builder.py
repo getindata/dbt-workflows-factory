@@ -73,3 +73,5 @@ def test_flow_builder():
         "model.dbt_test.model5",
         "model.dbt_test.model6",
     ]
+
+    print(next(flow_builder.graph.graph.successors("model.dbt_test.model1")))
