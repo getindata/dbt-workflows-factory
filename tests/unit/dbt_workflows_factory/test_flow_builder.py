@@ -33,3 +33,43 @@ def test_flow_builder():
         ],
         SingleTask(job_id="model.pipeline_example.report", task_command="report", task_alias="report"),
     ]
+
+
+def test_flow_builder():
+    manifest_graph = create_tasks_graph(load_dbt_manifest("tests/unit/dbt_workflows_factory/test_data/manifest_2.json"))
+    flow_builder = FlowBuilder(manifest_graph)
+    assert flow_builder.create_task_list() == [
+        "model.dbt_test.model1",
+        "model.dbt_test.model2",
+        "model.dbt_test.model3",
+        "model.dbt_test.model4",
+        "model.dbt_test.model5",
+        "model.dbt_test.model6",
+        "model.dbt_test.model7",
+        "model.dbt_test.model8",
+        "model.dbt_test.model9",
+        "model.dbt_test.model10",
+        "model.dbt_test.model11",
+        "model.dbt_test.model12",
+    ]
+    assert list(flow_builder.graph.get_graph_edges()) == [
+        ("model.dbt_test.model1", "model.dbt_test.model2"),
+        ("model.dbt_test.model2", "model.dbt_test.model3"),
+        ("model.dbt_test.model3", "model.dbt_test.model10"),
+        ("model.dbt_test.model4", "model.dbt_test.model12"),
+        ("model.dbt_test.model5", "model.dbt_test.model3"),
+        ("model.dbt_test.model6", "model.dbt_test.model7"),
+        ("model.dbt_test.model6", "model.dbt_test.model8"),
+        ("model.dbt_test.model7", "model.dbt_test.model9"),
+        ("model.dbt_test.model8", "model.dbt_test.model9"),
+        ("model.dbt_test.model9", "model.dbt_test.model10"),
+        ("model.dbt_test.model10", "model.dbt_test.model4"),
+        ("model.dbt_test.model10", "model.dbt_test.model11"),
+        ("model.dbt_test.model11", "model.dbt_test.model12"),
+    ]
+    assert list(flow_builder.graph.get_graph_sinks()) == ["model.dbt_test.model12"]
+    assert list(flow_builder.graph.get_graph_sources()) == [
+        "model.dbt_test.model1",
+        "model.dbt_test.model5",
+        "model.dbt_test.model6",
+    ]

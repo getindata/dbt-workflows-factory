@@ -13,12 +13,16 @@ class FlowBuilder:
     def create_task_list(self) -> list[str]:
         return [task[0] for task in self._graph.get_graph_nodes()]
 
+    @property
+    def graph(self) -> DbtManifestGraph:
+        return self._graph
+
     def create_task_structure(self):
         source_nodes = self._graph.get_graph_sources()
         sink_nodes = self._graph.get_graph_sinks()
 
         if len(sink_nodes) != 1:
-            raise ValueError("Manifest DAG must have exactly one sink node")
+            raise ValueError(f"Manifest DAG must have exactly one sink node: {sink_nodes}")
         sink_node = sink_nodes[0]
         path_list: list[Task | list[Task]] = [
             SingleTask.from_node(source_node, self._graph.graph.nodes[source_node]) for source_node in source_nodes
