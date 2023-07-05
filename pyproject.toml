@@ -59,13 +59,15 @@ ignore_missing_imports = true
 strict = true
 
 [[tool.mypy.overrides]]
-module = "dbt_workflows_factory.tasks"
+module = [
+    "src.dbt_workflows_factory.tasks",
+    "src.dbt_workflows_factory.yaml_builder",
+]
 disallow_subclassing_any = false
-
 
 [[tool.mypy.overrides]]
-module = "dbt_workflows_factory.cli"
-disallow_subclassing_any = false
+module = "src.dbt_workflows_factory.cli"
+disallow_untyped_decorators = false
 
 
 [tool.coverage.run]

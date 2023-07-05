@@ -7,7 +7,7 @@ from dbt_graph_builder.workflow import ChainStep, ParallelStep, Step, StepFactor
 
 
 @dataclass(frozen=True)
-class SingleTask(Step):  # type: ignore
+class SingleTask(Step):
     """Single task in workflow."""
 
     task_alias: str
@@ -47,7 +47,7 @@ class SingleTask(Step):  # type: ignore
         }
 
 
-class ChainTask(ChainStep):  # type: ignore
+class ChainTask(ChainStep):
     """Chain task in workflow."""
 
     chain_counter: int = 0
@@ -78,7 +78,7 @@ class ChainTask(ChainStep):  # type: ignore
         }
 
 
-class ParallelTask(ParallelStep):  # type: ignore
+class ParallelTask(ParallelStep):
     """Parallel task in workflow."""
 
     parallel_counter: int = 0
@@ -102,7 +102,7 @@ class ParallelTask(ParallelStep):  # type: ignore
         return {self._task_alias: {"parallel": {"branches": [step.get_step() for step in self._steps]}}}
 
 
-class WorkflowTaskFactory(StepFactory):  # type: ignore
+class WorkflowTaskFactory(StepFactory):
     """Workflow task factory."""
 
     def create_single_step(self, node: str, node_definition: dict[str, Any]) -> SingleTask:
