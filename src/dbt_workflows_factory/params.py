@@ -4,6 +4,8 @@ from typing import NamedTuple
 
 
 class Params(NamedTuple):
+    """Parameters for workflows."""
+
     image_uri: str
     region: str
     full_command: str

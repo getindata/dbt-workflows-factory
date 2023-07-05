@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
+
 import click
 
 from .dbt_workflows_converter import DbtWorkflowsConverter
 from .params import Params
-import json
 
 
 @click.command()
@@ -46,6 +47,18 @@ def convert(
     key_volume_path: str,
     key_path: str,
 ) -> None:
+    """Convert dbt manifest.json to YAML for GCP Workflows.
+
+    Args:
+        manifest_file (click.Path): Path to dbt manifest.json file.
+        image_uri (str): Docker image URI.
+        region (str): GCP region.
+        full_command (str): Full command to run in container.
+        remote_path (str): Path to remote file.
+        key_volume_mount_path (str): Volume mount path for private key.
+        key_volume_path (str): Path for the private key file on the host.
+        key_path (str): Path for the private key file in the container.
+    """
     params = Params(
         image_uri=image_uri,
         region=region,

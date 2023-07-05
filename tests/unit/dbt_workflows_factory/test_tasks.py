@@ -1,4 +1,4 @@
-from dbt_workflows_factory.task import SingleTask
+from dbt_workflows_factory.tasks import SingleTask
 
 
 def test_task():

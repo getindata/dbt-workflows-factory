@@ -58,6 +58,16 @@ exclude = ["tests"]
 ignore_missing_imports = true
 strict = true
 
+[[tool.mypy.overrides]]
+module = "dbt_workflows_factory.tasks"
+disallow_subclassing_any = false
+
+
+[[tool.mypy.overrides]]
+module = "dbt_workflows_factory.cli"
+disallow_subclassing_any = false
+
+
 [tool.coverage.run]
 source = ["src"]
 omit = ["tests/*"]

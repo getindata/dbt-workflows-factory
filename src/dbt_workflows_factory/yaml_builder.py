@@ -8,40 +8,66 @@ from .params import Params
 
 
 class MainChainTask(ChainStep):
+    """Main chain task in workflow."""
+
     def get_step(self) -> dict[str, Any]:
+        """Return a main step result.
+
+        Returns:
+            dict[str, Any]: Step result.
+        """
         if self._next_step is None:
             return {"main": {"steps": [self._step.get_step()]}}
         return {"main": {"steps": [self._step.get_step(), *(next(iter(self._next_step.get_step().values()))["steps"])]}}
 
 
 class SimpleSingleTask(Step):
+    """Simple single task in workflow."""
+
     def __init__(self, get_step_def: dict[str, Any]) -> None:
+        """Create a new simple single task.
+
+        Args:
+            get_step_def (dict[str, Any]): The step definition.
+        """
         self._get_step_def = get_step_def
 
     def get_step(self) -> dict[str, Any]:
+        """Return a step result.
+
+        Returns:
+            dict[str, Any]: Step result.
+        """
         return self._get_step_def
 
 
 class TaskYamlBuilder:
+    """Task yaml builder."""
+
     def __init__(self, params: Params):
+        """Create a new task yaml builder.
+
+        Args:
+            params (Params): GCP workflow params.
+        """
         self._params = params
 
     @property
-    def subwork_batch_job_init(self) -> dict[str, Any]:
+    def _subwork_batch_job_init(self) -> dict[str, Any]:
         return {"init": {"assign": [{"fullcomand": self._params.full_command}]}}
 
     @property
-    def subwork_batch_job_main(self) -> dict[str, Any]:
+    def _subwork_batch_job_main(self) -> dict[str, Any]:
         return {
             "createAndRunBatchJob": {
                 "call": "http.post",
-                "args": self.subwork_batch_job_main_args,
+                "args": self._subwork_batch_job_main_args,
                 "result": "createAndRunBatchJobResponse",
             }
         }
 
     @property
-    def subwork_batch_job_main_args(self) -> dict[str, Any]:
+    def _subwork_batch_job_main_args(self) -> dict[str, Any]:
         return {
             "url": "${batchApiUrl}",
             "query": {"job_id": "${jobId}"},
@@ -50,8 +76,8 @@ class TaskYamlBuilder:
             "body": {
                 "taskGroups": {
                     "taskSpec": {
-                        "volumes": self.subwork_batch_job_main_args_volumes,
-                        "runnables": self.subwork_batch_job_main_args_runnables,
+                        "volumes": self._subwork_batch_job_main_args_volumes,
+                        "runnables": self._subwork_batch_job_main_args_runnables,
                     }
                 },
                 "logsPolicy": {"destination": "CLOUD_LOGGING"},
@@ -59,7 +85,7 @@ class TaskYamlBuilder:
         }
 
     @property
-    def subwork_batch_job_main_args_runnables(self) -> list[dict[str, Any]]:
+    def _subwork_batch_job_main_args_runnables(self) -> list[dict[str, Any]]:
         return [
             {
                 "container": {
@@ -78,7 +104,7 @@ class TaskYamlBuilder:
         ]
 
     @property
-    def subwork_batch_job_main_args_volumes(self) -> list[dict[str, Any]]:
+    def _subwork_batch_job_main_args_volumes(self) -> list[dict[str, Any]]:
         return [
             {
                 "gcs": {"remotePath": self._params.remote_path},
@@ -87,7 +113,7 @@ class TaskYamlBuilder:
         ]
 
     @property
-    def subwork_batch_job_get(self) -> dict[str, Any]:
+    def _subwork_batch_job_get(self) -> dict[str, Any]:
         return {
             "getJob": {
                 "call": "http.get",
@@ -100,25 +126,25 @@ class TaskYamlBuilder:
         }
 
     @property
-    def subworkflow(self) -> dict[str, Any]:
+    def _subworkflow(self) -> dict[str, Any]:
         return {
-            "params": self.subworkflow_batch_job_params,
-            "steps": self.subworkflow_batch_job_steps,
+            "params": self._subworkflow_batch_job_params,
+            "steps": self._subworkflow_batch_job_steps,
         }
 
     @property
-    def subworkflow_batch_job_steps(self) -> list[dict[str, Any]]:
+    def _subworkflow_batch_job_steps(self) -> list[dict[str, Any]]:
         return [
-            self.subwork_batch_job_init,
-            self.subwork_batch_job_main,
-            self.subwork_batch_job_get,
+            self._subwork_batch_job_init,
+            self._subwork_batch_job_main,
+            self._subwork_batch_job_get,
         ]
 
     @property
-    def subworkflow_batch_job_params(self) -> list[str]:
+    def _subworkflow_batch_job_params(self) -> list[str]:
         return ["batchApiUrl", "command", "jobId", "imageUri"]
 
-    def init_step(self, job_names: list[str]) -> Step:
+    def _init_step(self, job_names: list[str]) -> Step:
         return SimpleSingleTask(
             {
                 "init": {
@@ -144,8 +170,17 @@ class TaskYamlBuilder:
         job_list: list[str],
         additional_steps: Step,
     ) -> dict[str, Any]:
-        maint_chain_task = MainChainTask(self.init_step(job_list))
+        """Create a workflow.
+
+        Args:
+            job_list (list[str]): List of job names.
+            additional_steps (Step): Additional steps to add to the workflow.
+
+        Returns:
+            dict[str, Any]: Workflow.
+        """
+        maint_chain_task = MainChainTask(self._init_step(job_list))
         maint_chain_task.add_step(additional_steps)
         yaml_representation = maint_chain_task.get_step()
-        yaml_representation["subworkflowBatchJob"] = self.subworkflow
+        yaml_representation["subworkflowBatchJob"] = self._subworkflow
         return yaml_representation
