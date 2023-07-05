@@ -22,7 +22,7 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "dbt-graph-builder>=0.3.0",
+    "dbt-graph-builder>=0.4.0",
 ]
 license = {file = "LICENSE"}
 dynamic = ["version"]

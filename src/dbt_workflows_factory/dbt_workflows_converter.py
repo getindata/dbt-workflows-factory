@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-import yaml
+from typing import Any
 
-from .dag_factory.dag_factory import DbtManifestParser
-from .flow_builder import FlowBuilder
+from dbt_graph_builder.builder import (
+    GraphConfiguration,
+    create_tasks_graph,
+    load_dbt_manifest,
+)
+from dbt_graph_builder.workflow import SequentialStepsGraphFactory
+
 from .params import Params
+from .task import WorkflowTaskFactory
 from .yaml_builder import TaskYamlBuilder
 
 
@@ -13,21 +19,14 @@ class DbtWorkflowsConverter:
         self,
         params: Params,
         manifest_path: str,
-        workflows_path: str,
     ):
         self._manifest_path = manifest_path
-        self._workflows_path = workflows_path
         self._params = params
-        self._parser = DbtManifestParser()
 
-    def get_yaml(self):
-        dag = self._parser.parse_manifest(manifest_file_path=self._manifest_path)
+    def get_yaml(self) -> dict[str, Any]:
+        dag = create_tasks_graph(load_dbt_manifest(self._manifest_path), GraphConfiguration())
+        task_list: list[str] = list(dag.graph.nodes)
+        tasks = SequentialStepsGraphFactory(dag, WorkflowTaskFactory()).get_workflow()
         yaml_builder = TaskYamlBuilder(self._params)
-        flow_builder = FlowBuilder(dag)
-
-        task_list = flow_builder.create_task_list()
-        task_structure = flow_builder.create_task_structure()
-        tasks_yaml = yaml_builder.create_tasks_yaml_list(task_structure)
-        result = yaml_builder.create_workflow(task_list, tasks_yaml)
-
+        result = yaml_builder.create_workflow(task_list, tasks)
         return result

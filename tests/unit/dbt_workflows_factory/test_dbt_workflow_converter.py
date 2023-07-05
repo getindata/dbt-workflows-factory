@@ -17,7 +17,6 @@ def test_converter():
             key_path="key_path",
         ),
         manifest_path="tests/unit/dbt_workflows_factory/test_data/manifest.json",
-        workflows_path="tests/unit/dbt_workflows_factory/test_data/workflows.json",
     )
     assert converter.get_yaml() == {
         "main": {
@@ -61,11 +60,11 @@ def test_converter():
                     }
                 },
                 {
-                    "parallelSteps": {
+                    "parallel-2": {
                         "parallel": {
                             "branches": [
                                 {
-                                    "branch1": {
+                                    "branch-1": {
                                         "steps": [
                                             {
                                                 "supplier_parts": {
@@ -83,7 +82,7 @@ def test_converter():
                                     }
                                 },
                                 {
-                                    "branch2": {
+                                    "branch-2": {
                                         "steps": [
                                             {
                                                 "all_europe_region_countries": {

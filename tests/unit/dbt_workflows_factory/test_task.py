@@ -2,8 +2,8 @@ from dbt_workflows_factory.task import SingleTask
 
 
 def test_task():
-    task = SingleTask("job_id", "task_command", "task_alias")
-    assert task.create_yml() == {
+    task = SingleTask("task_alias", "task_command", "job_id")
+    assert task.get_step() == {
         "task_alias": {
             "call": "subworkflowBatchJob",
             "args": {

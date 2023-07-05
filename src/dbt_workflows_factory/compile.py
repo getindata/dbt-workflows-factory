@@ -4,6 +4,7 @@ import click
 
 from .dbt_workflows_converter import DbtWorkflowsConverter
 from .params import Params
+import json
 
 
 @click.command()
@@ -36,15 +37,15 @@ from .params import Params
     required=True,
 )
 def convert(
-    manifest_file,
-    image_uri,
-    region,
-    full_command,
-    remote_path,
-    key_volume_mount_path,
-    key_volume_path,
-    key_path,
-):
+    manifest_file: click.Path,
+    image_uri: str,
+    region: str,
+    full_command: str,
+    remote_path: str,
+    key_volume_mount_path: str,
+    key_volume_path: str,
+    key_path: str,
+) -> None:
     params = Params(
         image_uri=image_uri,
         region=region,
@@ -55,7 +56,7 @@ def convert(
         key_path=key_path,
     )
     converter = DbtWorkflowsConverter(manifest_path=manifest_file, params=params)
-    print(converter.get_yaml())
+    click.echo(json.dumps(converter.get_yaml()))
 
 
 if __name__ == "__main__":
