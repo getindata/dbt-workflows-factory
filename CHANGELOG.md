@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
-- First release
+## [0.0.2] - 2023-07-06
 
-[Unreleased]: https://github.com/getindata/dbt_workflows_factory/compare/
+-   First release
+
+[Unreleased]: https://github.com/getindata/dbt-workflows-factory/compare/0.0.2...HEAD
+
+[0.0.2]: https://github.com/getindata/dbt-workflows-factory/compare/b792992e20dcece8d12c7a30fa2d6ca92009e153...0.0.2
