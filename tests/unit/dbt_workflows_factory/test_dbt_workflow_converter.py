@@ -7,7 +7,7 @@ def test_converter():
         params=Params(
             image_uri="image_uri",
             region="region",
-            full_command="full_command",
+            full_command="full_command_param",
             remote_path="remote_path",
             key_volume_mount_path="key_volume_mount_path",
             key_volume_path="key_volume_path",
@@ -117,7 +117,7 @@ def test_converter():
         "subworkflowBatchJob": {
             "params": ["batchApiUrl", "command", "jobId", "imageUri"],
             "steps": [
-                {"init": {"assign": [{"fullcomand": "full_command"}]}},
+                {"init": {"assign": [{"fullcommand": "full_command_param"}]}},
                 {
                     "createAndRunBatchJob": {
                         "call": "http.post",
@@ -137,7 +137,7 @@ def test_converter():
                                                 "container": {
                                                     "imageUri": "imageUri",
                                                     "entrypoint": "bash",
-                                                    "commands": ["-c", "full_command"],
+                                                    "commands": ["-c", "${fullcommand}", "&&", "echo", "done"],
                                                     "volumes": ["key_volume_path"],
                                                 },
                                                 "environment": {

@@ -55,7 +55,7 @@ class TaskYamlBuilder:
 
     @property
     def _subwork_batch_job_init(self) -> dict[str, Any]:
-        return {"init": {"assign": [{"fullcomand": self._params.full_command}]}}
+        return {"init": {"assign": [{"fullcommand": self._params.full_command}]}}
 
     @property
     def _subwork_batch_job_main(self) -> dict[str, Any]:
@@ -92,7 +92,7 @@ class TaskYamlBuilder:
                 "container": {
                     "imageUri": "imageUri",
                     "entrypoint": "bash",
-                    "commands": ["-c", "full_command"],
+                    "commands": ["-c", "${fullcommand}", "&&", "echo", "done"],
                     "volumes": [self._params.key_volume_path],
                 },
                 "environment": {
