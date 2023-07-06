@@ -53,9 +53,68 @@ class TaskYamlBuilder:
         """
         self._params = params
 
+    def create_workflow(
+        self,
+        job_list: list[str],
+        additional_steps: Step,
+    ) -> dict[str, Any]:
+        """Create a workflow.
+
+        Args:
+            job_list (list[str]): List of job names.
+            additional_steps (Step): Additional steps to add to the workflow.
+
+        Returns:
+            dict[str, Any]: Workflow.
+        """
+        maint_chain_task = MainChainTask(self._init_step(job_list))
+        maint_chain_task.add_step(additional_steps)
+        yaml_representation = maint_chain_task.get_step()
+        yaml_representation["subworkflowBatchJob"] = self._subworkflow
+        return yaml_representation
+
+    def _init_step(self, job_names: list[str]) -> Step:
+        return SimpleSingleTask(
+            {
+                "init": {
+                    "assign": [
+                        {"projectId": '${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'},
+                        {"region": self._params.region},
+                        {"batchApi": "batch.googleapis.com/v1"},
+                        {
+                            "batchApiUrl": (
+                                '${"https://" + batchApi + "/projects/" + projectId + "/locations/" + region + "/jobs"}'
+                            )
+                        },
+                        {"imageUri": self._params.image_uri},
+                        *[{task_name: f"${{{task_name.lower()} + string(int(sys.now()))}}"} for task_name in job_names],
+                    ]
+                }
+            }
+        )
+
+    @property
+    def _subworkflow(self) -> dict[str, Any]:
+        return {
+            "params": self._subworkflow_batch_job_params,
+            "steps": self._subworkflow_batch_job_steps,
+        }
+
+    @property
+    def _subworkflow_batch_job_params(self) -> list[str]:
+        return ["batchApiUrl", "command", "jobId", "imageUri", "select"]
+
+    @property
+    def _subworkflow_batch_job_steps(self) -> list[dict[str, Any]]:
+        return [
+            self._subwork_batch_job_init,
+            self._subwork_batch_job_main,
+            self._subwork_batch_job_get,
+        ]
+
     @property
     def _subwork_batch_job_init(self) -> dict[str, Any]:
-        return {"init": {"assign": [{"fullcommand": self._params.full_command}]}}
+        return {"init": {"assign": [{"command": "${command}"}]}}
 
     @property
     def _subwork_batch_job_main(self) -> dict[str, Any]:
@@ -91,8 +150,12 @@ class TaskYamlBuilder:
             {
                 "container": {
                     "imageUri": "imageUri",
-                    "entrypoint": "bash",
-                    "commands": ["-c", "${fullcommand}", "&&", "echo", "done"],
+                    "entrypoint": "/bin/bash",
+                    "commands": [
+                        "-c",
+                        "dbt --no-write-json ${command} --target env_execution --project-dir /dbt "
+                        "--profiles-dir /root/.dbt --select ${select}",
+                    ],
                     "volumes": [self._params.key_volume_path],
                 },
                 "environment": {
@@ -125,63 +188,3 @@ class TaskYamlBuilder:
                 "result": "getJobResult",
             }
         }
-
-    @property
-    def _subworkflow(self) -> dict[str, Any]:
-        return {
-            "params": self._subworkflow_batch_job_params,
-            "steps": self._subworkflow_batch_job_steps,
-        }
-
-    @property
-    def _subworkflow_batch_job_steps(self) -> list[dict[str, Any]]:
-        return [
-            self._subwork_batch_job_init,
-            self._subwork_batch_job_main,
-            self._subwork_batch_job_get,
-        ]
-
-    @property
-    def _subworkflow_batch_job_params(self) -> list[str]:
-        return ["batchApiUrl", "command", "jobId", "imageUri"]
-
-    def _init_step(self, job_names: list[str]) -> Step:
-        return SimpleSingleTask(
-            {
-                "init": {
-                    "assign": [
-                        {"projectId": '${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'},
-                        {"region": self._params.region},
-                        {"batchApi": "batch.googleapis.com/v1"},
-                        {
-                            "batchApiUrl": (
-                                '${"https://" + batchApi + "/projects/" + projectId + "/locations/" + region + "/jobs"}'
-                            )
-                        },
-                        {"containerEntrypoint": "bash"},
-                        {"imageUri": self._params.image_uri},
-                        *[{task_name: f"${{{task_name.lower()} + string(int(sys.now()))}}"} for task_name in job_names],
-                    ]
-                }
-            }
-        )
-
-    def create_workflow(
-        self,
-        job_list: list[str],
-        additional_steps: Step,
-    ) -> dict[str, Any]:
-        """Create a workflow.
-
-        Args:
-            job_list (list[str]): List of job names.
-            additional_steps (Step): Additional steps to add to the workflow.
-
-        Returns:
-            dict[str, Any]: Workflow.
-        """
-        maint_chain_task = MainChainTask(self._init_step(job_list))
-        maint_chain_task.add_step(additional_steps)
-        yaml_representation = maint_chain_task.get_step()
-        yaml_representation["subworkflowBatchJob"] = self._subworkflow
-        return yaml_representation

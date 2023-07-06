@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from dbt_graph_builder.node_type import NodeType
 from dbt_graph_builder.workflow import ChainStep, ParallelStep, Step, StepFactory
 
 
@@ -11,7 +12,8 @@ class SingleTask(Step):
     """Single task in workflow."""
 
     task_alias: str
-    task_command: str
+    task_select: str
+    task_command: NodeType
     job_id: str
 
     @classmethod
@@ -25,7 +27,7 @@ class SingleTask(Step):
         Returns:
             SingleTask: SingleTask instance.
         """
-        return cls(node_def["alias"], node_def["select"], job_id)
+        return cls(node_def["alias"], node_def["select"], node_def["node_type"], job_id)
 
     def get_step(self) -> dict[str, Any]:
         """Return a step result.
@@ -33,14 +35,20 @@ class SingleTask(Step):
         Returns:
             dict[str, Any]: Step result.
         """
+        if self.task_command == NodeType.RUN_TEST:
+            command = "run"
+        else:
+            command = "test"
+
         return {
             self.task_alias: {
                 "call": "subworkflowBatchJob",
                 "args": {
                     "batchApiUrl": "${batchApiUrl}",
-                    "command": self.task_command,
+                    "select": self.task_select,
                     "jobId": self.job_id,
                     "imageUri": "${imageUri}",
+                    "command": command,
                 },
                 "result": f"${{{self.job_id}}}Result",
             }

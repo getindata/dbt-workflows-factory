@@ -37,7 +37,9 @@ class DbtWorkflowsConverter:
         Returns:
             dict[str, Any]: Workflows python object representation.
         """
-        dag = create_tasks_graph(load_dbt_manifest(self._manifest_path), GraphConfiguration())
+        dag = create_tasks_graph(
+            load_dbt_manifest(self._manifest_path), GraphConfiguration(dbt_manifest_props={"alias": "alias"})
+        )
         task_list: list[str] = list(dag.graph.nodes)
         tasks = SequentialStepsGraphFactory(dag, WorkflowTaskFactory()).get_workflow()
         yaml_builder = TaskYamlBuilder(self._params)
