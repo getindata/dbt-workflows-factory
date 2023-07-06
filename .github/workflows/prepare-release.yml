@@ -27,25 +27,8 @@ jobs:
       - name: Bump the version number
         id: bump_version
         run: |
-          python -c "
-          import sys
-          part = sys.argv[1]
-          with open('VERSION', 'r') as file:
-            version = file.read().strip().split('.')
-          if part == 'patch':
-            version[2] = str(int(version[2]) + 1)
-          elif part == 'minor':
-            version[1] = str(int(version[1]) + 1)
-            version[2] = '0'
-          elif part == 'major':
-            version[0] = str(int(version[0]) + 1)
-            version[1] = '0'
-            version[2] = '0'
-          with open('VERSION', 'w') as file:
-            file.write('.'.join(version))
-            file.write('\n')
-          " ${{ github.event.inputs.version_part }}
-          echo "::set-output name=package_version::$(pdm show --version)"
+          python ./.github/scripts/bump_version.py ${{ github.event.inputs.version_part }}
+          echo "package_version=$(pdm show --version)" >> "$GITHUB_OUTPUT"
       - name: Update the CHANGELOG according to 'Keep a Changelog' guidelines
         uses: thomaseizinger/keep-a-changelog-new-release@v1
         with:

@@ -2,7 +2,7 @@ import json
 
 from click.testing import CliRunner
 
-from dbt_workflows_factory.cli import convert
+from dbt_workflows_factory.cli import convert, create_request
 
 
 def test_convert(monkeypatch):
@@ -51,3 +51,38 @@ def test_convert(monkeypatch):
     )
     assert result.output == f"{params_result}\n"
     assert result.exit_code == 0
+
+
+def test_create_request():
+    runner = CliRunner()
+    result = runner.invoke(
+        create_request,
+        [
+            "--name",
+            "name",
+            "--description",
+            "description",
+            "--labels",
+            "label1",
+            "value1",
+            "--labels",
+            "label2",
+            "value2",
+            "--service-account",
+            "service_account",
+            "--source-contents",
+            "source_contents",
+        ],
+    )
+    assert result.output == (
+        json.dumps(
+            {
+                "name": "name",
+                "description": "description",
+                "labels": {"label1": "value1", "label2": "value2"},
+                "sourceContents": "source_contents",
+                "serviceAccount": "service_account",
+            }
+        )
+        + "\n"
+    )

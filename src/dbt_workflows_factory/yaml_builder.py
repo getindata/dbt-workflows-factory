@@ -2,23 +2,24 @@ from __future__ import annotations
 
 from typing import Any
 
-from dbt_graph_builder.workflow import ChainStep, Step
+from dbt_graph_builder.workflow import Step
 
 from .params import Params
+from .tasks import ChainTask
 
 
-class MainChainTask(ChainStep):
+class MainChainTask(ChainTask):
     """Main chain task in workflow."""
 
-    def get_step(self) -> dict[str, Any]:
-        """Return a main step result.
+    def __init__(self, step: Step, next_step: ChainTask | None = None) -> None:
+        """Create a new main chain task.
 
-        Returns:
-            dict[str, Any]: Step result.
+        Args:
+            step (Step): The step to add.
+            next_step (ChainTask | None, optional): The next step. Defaults to None.
         """
-        if self._next_step is None:
-            return {"main": {"steps": [self._step.get_step()]}}
-        return {"main": {"steps": [self._step.get_step(), *(next(iter(self._next_step.get_step().values()))["steps"])]}}
+        super().__init__(step, next_step)
+        self._task_alias = "main"
 
 
 class SimpleSingleTask(Step):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 
 import click
 
@@ -8,7 +9,12 @@ from .dbt_workflows_converter import DbtWorkflowsConverter
 from .params import Params
 
 
-@click.command()
+@click.group()
+def cli() -> None:
+    """CLI entrypoint."""
+
+
+@cli.command()
 @click.argument("manifest_file", type=click.Path(exists=True))
 @click.option("--image-uri", type=str, help="Docker image URI", required=True)
 @click.option("--region", type=str, help="GCP region", required=True)
@@ -38,7 +44,7 @@ from .params import Params
     required=True,
 )
 def convert(
-    manifest_file: click.Path,
+    manifest_file: str,
     image_uri: str,
     region: str,
     full_command: str,
@@ -47,18 +53,7 @@ def convert(
     key_volume_path: str,
     key_path: str,
 ) -> None:
-    """Convert dbt manifest.json to YAML for GCP Workflows.
-
-    Args:
-        manifest_file (click.Path): Path to dbt manifest.json file.
-        image_uri (str): Docker image URI.
-        region (str): GCP region.
-        full_command (str): Full command to run in container.
-        remote_path (str): Path to remote file.
-        key_volume_mount_path (str): Volume mount path for private key.
-        key_volume_path (str): Path for the private key file on the host.
-        key_path (str): Path for the private key file in the container.
-    """
+    """Convert dbt manifest.json to YAML for GCP Workflows."""  # noqa: DCO020
     params = Params(
         image_uri=image_uri,
         region=region,
@@ -72,5 +67,39 @@ def convert(
     click.echo(json.dumps(converter.get_yaml()))
 
 
+@cli.command()
+@click.option("--name", type=str, help="Workflow name", required=True)
+@click.option("--description", type=str, help="Workflow description", required=False)
+@click.option("--labels", "-l", type=(str, str), help="Workflow labels", required=False, multiple=True)
+@click.option("--service-account", type=str, help="Service account", required=True)
+@click.option("--source-contents", type=str, help="Source contents", required=False)
+@click.option("--source-path", type=click.Path(exists=True), help="Source path", required=False)
+def create_request(
+    name: str,
+    description: str,
+    labels: list[tuple[str, str]],
+    service_account: str,
+    source_contents: str | None,
+    source_path: str | None,
+) -> None:
+    """Create a request for a new workflow."""  # noqa: DCO020
+    if source_contents is None and source_path is None:
+        source_contents = sys.stdin.read()
+    elif source_path is not None:
+        with open(source_path) as file:
+            source_contents = file.read()
+    click.echo(
+        json.dumps(
+            {
+                "name": name,
+                "description": description,
+                "labels": dict(labels),
+                "sourceContents": source_contents,
+                "serviceAccount": service_account,
+            }
+        )
+    )
+
+
 if __name__ == "__main__":
-    convert()
+    cli()
