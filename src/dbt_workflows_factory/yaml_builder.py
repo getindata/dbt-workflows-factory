@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 from dbt_graph_builder.workflow import Step
-from .tasks import ChainTask
 
 from .params import Params
+from .tasks import ChainTask
 
 
 class MainChainTask(ChainTask):
@@ -20,6 +20,7 @@ class MainChainTask(ChainTask):
         """
         super().__init__(step, next_step)
         self._task_alias = "main"
+
 
 class SimpleSingleTask(Step):
     """Simple single task in workflow."""
