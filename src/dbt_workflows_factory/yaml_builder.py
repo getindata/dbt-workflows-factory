@@ -5,7 +5,7 @@ from typing import Any
 from dbt_graph_builder.workflow import Step
 
 from .params import Params
-from .tasks import WorkflowChainStep, CustomStep
+from .tasks import CustomStep, WorkflowChainStep
 
 
 class MainChainTask(WorkflowChainStep):
