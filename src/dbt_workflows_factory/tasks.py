@@ -110,7 +110,7 @@ class WorkflowParallelStep(ParallelStep):
             steps (list[Step]): The parallel steps.
         """
         super().__init__(steps)
-        self._task_alias = f"parallel_{self.parallel_counter}"
+        self._step_name = f"parallel_{self.parallel_counter}"
         WorkflowParallelStep.parallel_counter += 1
 
     def get_step(self) -> dict[str, Any]:
@@ -119,7 +119,7 @@ class WorkflowParallelStep(ParallelStep):
         Returns:
             dict[str, Any]: Step result.
         """
-        return {self._task_alias: {"parallel": {"branches": [step.get_step() for step in self._steps]}}}
+        return {self._step_name: {"parallel": {"branches": [step.get_step() for step in self._steps]}}}
 
 
 class WorkflowStepFactory(StepFactory):
