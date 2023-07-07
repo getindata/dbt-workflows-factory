@@ -17,16 +17,7 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install [dbt-wo
 ```bash
 pip install dbt-workflows-factory
 ```
-### Params
 
-Parameters specified for the converters are:
-1. `image_uri`: url address for the image
-2. `region`: the location where tge workflow executes on GCP (example: `us-central1` or `europe-west1`)
-3. `full_command`: full command executed on image (example: `"dbt --no-write-json run --target env_execution --project-dir /dbt --profiles-dir /root/.dbt --select "`)
-4. `remote_path`: gcs mount path (example: ` "/mnt/disks/var"`)
-5. `key_volume_mount_path`: path for mounting the volume containg key (ex. `/mnt/disks/var/keyfile_name.json`)
-6. `key_volume_path`: path for mounting (ex. `["/mnt/disks/var/:/mnt/disks/var/:rw"]`)
-7. `key_path`:  is a remote path for bucket containing key to be mounted
 
 ### How to run
 
