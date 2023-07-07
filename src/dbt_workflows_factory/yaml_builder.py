@@ -55,25 +55,23 @@ class TaskYamlBuilder:
 
     def create_workflow(
         self,
-        job_list: list[str],
         additional_steps: Step,
     ) -> dict[str, Any]:
         """Create a workflow.
 
         Args:
-            job_list (list[str]): List of job names.
             additional_steps (Step): Additional steps to add to the workflow.
 
         Returns:
             dict[str, Any]: Workflow.
         """
-        maint_chain_task = MainChainTask(self._init_step(job_list))
+        maint_chain_task = MainChainTask(self._init_step())
         maint_chain_task.add_step(additional_steps)
         yaml_representation = maint_chain_task.get_step()
         yaml_representation["subworkflowBatchJob"] = self._subworkflow
         return yaml_representation
 
-    def _init_step(self, job_names: list[str]) -> Step:
+    def _init_step(self) -> Step:
         return SimpleSingleTask(
             {
                 "init": {
@@ -87,7 +85,6 @@ class TaskYamlBuilder:
                             )
                         },
                         {"imageUri": self._params.image_uri},
-                        *[{task_name: f"${{{task_name.lower()} + string(int(sys.now()))}}"} for task_name in job_names],
                     ]
                 }
             }
@@ -96,38 +93,33 @@ class TaskYamlBuilder:
     @property
     def _subworkflow(self) -> dict[str, Any]:
         return {
-            "params": self._subworkflow_batch_job_params,
-            "steps": self._subworkflow_batch_job_steps,
+            "params": self._subworkflow_job_params,
+            "steps": self._subworkflow_job_steps,
         }
 
     @property
-    def _subworkflow_batch_job_params(self) -> list[str]:
+    def _subworkflow_job_params(self) -> list[str]:
         return ["batchApiUrl", "command", "jobId", "imageUri", "select"]
 
     @property
-    def _subworkflow_batch_job_steps(self) -> list[dict[str, Any]]:
+    def _subworkflow_job_steps(self) -> list[dict[str, Any]]:
         return [
-            self._subwork_batch_job_init,
-            self._subwork_batch_job_main,
-            self._subwork_batch_job_get,
+            self._subwork_main_job,
+            self._subwork_get_job,
         ]
 
     @property
-    def _subwork_batch_job_init(self) -> dict[str, Any]:
-        return {"init": {"assign": [{"command": "${command}"}]}}
-
-    @property
-    def _subwork_batch_job_main(self) -> dict[str, Any]:
+    def _subwork_main_job(self) -> dict[str, Any]:
         return {
             "createAndRunBatchJob": {
                 "call": "http.post",
-                "args": self._subwork_batch_job_main_args,
+                "args": self._subwork_job_args,
                 "result": "createAndRunBatchJobResponse",
             }
         }
 
     @property
-    def _subwork_batch_job_main_args(self) -> dict[str, Any]:
+    def _subwork_job_args(self) -> dict[str, Any]:
         return {
             "url": "${batchApiUrl}",
             "query": {"job_id": "${jobId}"},
@@ -136,8 +128,8 @@ class TaskYamlBuilder:
             "body": {
                 "taskGroups": {
                     "taskSpec": {
-                        "volumes": self._subwork_batch_job_main_args_volumes,
-                        "runnables": self._subwork_batch_job_main_args_runnables,
+                        "volumes": self._subwork_job_volumes,
+                        "runnables": self._subwork_job_runnables,
                     }
                 },
                 "logsPolicy": {"destination": "CLOUD_LOGGING"},
@@ -145,7 +137,16 @@ class TaskYamlBuilder:
         }
 
     @property
-    def _subwork_batch_job_main_args_runnables(self) -> list[dict[str, Any]]:
+    def _subwork_job_volumes(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "gcs": {"remotePath": self._params.gcs_key_volume_remote_path},
+                "mountPath": self._params.gcs_key_volume_mount_path,
+            }
+        ]
+
+    @property
+    def _subwork_job_runnables(self) -> list[dict[str, Any]]:
         return [
             {
                 "container": {
@@ -156,28 +157,19 @@ class TaskYamlBuilder:
                         "dbt --no-write-json ${command} --target env_execution --project-dir /dbt "
                         "--profiles-dir /root/.dbt --select ${select}",
                     ],
-                    "volumes": [self._params.key_volume_path],
+                    "volumes": [self._params.gcs_key_volume_container_mount_path],
                 },
                 "environment": {
                     "variables": {
-                        "GCP_KEY_PATH": self._params.key_path,
-                        "GCP_PROJECT": "dataops" "-test" "-project",
+                        "GCP_KEY_PATH": self._params.container_gcp_key_path,
+                        "GCP_PROJECT": self._params.container_gcp_project_id,
                     }
                 },
             }
         ]
 
     @property
-    def _subwork_batch_job_main_args_volumes(self) -> list[dict[str, Any]]:
-        return [
-            {
-                "gcs": {"remotePath": self._params.remote_path},
-                "mountPath": self._params.key_volume_mount_path,
-            }
-        ]
-
-    @property
-    def _subwork_batch_job_get(self) -> dict[str, Any]:
+    def _subwork_get_job(self) -> dict[str, Any]:
         return {
             "getJob": {
                 "call": "http.get",

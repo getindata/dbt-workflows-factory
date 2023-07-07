@@ -40,8 +40,7 @@ class DbtWorkflowsConverter:
         dag = create_tasks_graph(
             load_dbt_manifest(self._manifest_path), GraphConfiguration(dbt_manifest_props={"alias": "alias"})
         )
-        task_list: list[str] = list(dag.graph.nodes)
         tasks = SequentialStepsGraphFactory(dag, WorkflowTaskFactory()).get_workflow()
         yaml_builder = TaskYamlBuilder(self._params)
-        result = yaml_builder.create_workflow(task_list, tasks)
+        result = yaml_builder.create_workflow(tasks)
         return result

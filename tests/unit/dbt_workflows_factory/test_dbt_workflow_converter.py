@@ -7,11 +7,11 @@ def test_converter():
         params=Params(
             image_uri="image_uri",
             region="region",
-            full_command="full_command_param",
-            remote_path="remote_path",
-            key_volume_mount_path="key_volume_mount_path",
-            key_volume_path="key_volume_path",
-            key_path="key_path",
+            gcs_key_volume_remote_path="remote_path",
+            gcs_key_volume_mount_path="key_volume_mount_path",
+            gcs_key_volume_container_mount_path="key_volume_path",
+            container_gcp_key_path="key_path",
+            container_gcp_project_id="project_id",
         ),
         manifest_path="tests/unit/dbt_workflows_factory/test_data/manifest.json",
     )
@@ -27,20 +27,7 @@ def test_converter():
                             {
                                 "batchApiUrl": '${"https://" + batchApi + "/projects/" + projectId + "/locations/" + region + "/jobs"}'
                             },
-                            {"containerEntrypoint": "bash"},
                             {"imageUri": "image_uri"},
-                            {
-                                "model.pipeline_example.orders": "${model.pipeline_example.orders + string(int(sys.now()))}"
-                            },
-                            {
-                                "model.pipeline_example.supplier_parts": "${model.pipeline_example.supplier_parts + string(int(sys.now()))}"
-                            },
-                            {
-                                "model.pipeline_example.all_europe_region_countries": "${model.pipeline_example.all_europe_region_countries + string(int(sys.now()))}"
-                            },
-                            {
-                                "model.pipeline_example.report": "${model.pipeline_example.report + string(int(sys.now()))}"
-                            },
                         ]
                     }
                 },
@@ -49,11 +36,25 @@ def test_converter():
                         "call": "subworkflowBatchJob",
                         "args": {
                             "batchApiUrl": "${batchApiUrl}",
-                            "command": "orders",
-                            "jobId": "model.pipeline_example.orders",
+                            "select": "orders",
+                            "jobId": "model_pipeline_example_orders",
                             "imageUri": "${imageUri}",
+                            "command": "run",
                         },
-                        "result": "${model.pipeline_example.orders}Result",
+                        "result": "model_pipeline_example_orders_RESULT",
+                    }
+                },
+                {
+                    "orders": {
+                        "call": "subworkflowBatchJob",
+                        "args": {
+                            "batchApiUrl": "${batchApiUrl}",
+                            "select": "orders",
+                            "jobId": "model_pipeline_example_orders",
+                            "imageUri": "${imageUri}",
+                            "command": "test",
+                        },
+                        "result": "model_pipeline_example_orders_RESULT",
                     }
                 },
                 {
@@ -61,38 +62,66 @@ def test_converter():
                         "parallel": {
                             "branches": [
                                 {
-                                    "branch-1": {
+                                    "chain-5": {
                                         "steps": [
                                             {
                                                 "supplier_parts": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
                                                         "batchApiUrl": "${batchApiUrl}",
-                                                        "command": "supplier_parts",
-                                                        "jobId": "model.pipeline_example.supplier_parts",
+                                                        "select": "supplier_parts",
+                                                        "jobId": "model_pipeline_example_supplier_parts",
                                                         "imageUri": "${imageUri}",
+                                                        "command": "run",
                                                     },
-                                                    "result": "${model.pipeline_example.supplier_parts}Result",
+                                                    "result": "model_pipeline_example_supplier_parts_RESULT",
                                                 }
-                                            }
+                                            },
+                                            {
+                                                "supplier_parts": {
+                                                    "call": "subworkflowBatchJob",
+                                                    "args": {
+                                                        "batchApiUrl": "${batchApiUrl}",
+                                                        "select": "supplier_parts",
+                                                        "jobId": "model_pipeline_example_supplier_parts",
+                                                        "imageUri": "${imageUri}",
+                                                        "command": "test",
+                                                    },
+                                                    "result": "model_pipeline_example_supplier_parts_RESULT",
+                                                }
+                                            },
                                         ]
                                     }
                                 },
                                 {
-                                    "branch-2": {
+                                    "chain-8": {
                                         "steps": [
                                             {
                                                 "all_europe_region_countries": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
                                                         "batchApiUrl": "${batchApiUrl}",
-                                                        "command": "all_europe_region_countries",
-                                                        "jobId": "model.pipeline_example.all_europe_region_countries",
+                                                        "select": "all_europe_region_countries",
+                                                        "jobId": "model_pipeline_example_all_europe_region_countries",
                                                         "imageUri": "${imageUri}",
+                                                        "command": "run",
                                                     },
-                                                    "result": "${model.pipeline_example.all_europe_region_countries}Result",
+                                                    "result": "model_pipeline_example_all_europe_region_countries_RESULT",
                                                 }
-                                            }
+                                            },
+                                            {
+                                                "all_europe_region_countries": {
+                                                    "call": "subworkflowBatchJob",
+                                                    "args": {
+                                                        "batchApiUrl": "${batchApiUrl}",
+                                                        "select": "all_europe_region_countries",
+                                                        "jobId": "model_pipeline_example_all_europe_region_countries",
+                                                        "imageUri": "${imageUri}",
+                                                        "command": "test",
+                                                    },
+                                                    "result": "model_pipeline_example_all_europe_region_countries_RESULT",
+                                                }
+                                            },
                                         ]
                                     }
                                 },
@@ -105,19 +134,32 @@ def test_converter():
                         "call": "subworkflowBatchJob",
                         "args": {
                             "batchApiUrl": "${batchApiUrl}",
-                            "command": "report",
-                            "jobId": "model.pipeline_example.report",
+                            "select": "report",
+                            "jobId": "model_pipeline_example_report",
                             "imageUri": "${imageUri}",
+                            "command": "run",
                         },
-                        "result": "${model.pipeline_example.report}Result",
+                        "result": "model_pipeline_example_report_RESULT",
+                    }
+                },
+                {
+                    "report": {
+                        "call": "subworkflowBatchJob",
+                        "args": {
+                            "batchApiUrl": "${batchApiUrl}",
+                            "select": "report",
+                            "jobId": "model_pipeline_example_report",
+                            "imageUri": "${imageUri}",
+                            "command": "test",
+                        },
+                        "result": "model_pipeline_example_report_RESULT",
                     }
                 },
             ]
         },
         "subworkflowBatchJob": {
-            "params": ["batchApiUrl", "command", "jobId", "imageUri"],
+            "params": ["batchApiUrl", "command", "jobId", "imageUri", "select"],
             "steps": [
-                {"init": {"assign": [{"fullcommand": "full_command_param"}]}},
                 {
                     "createAndRunBatchJob": {
                         "call": "http.post",
@@ -136,14 +178,17 @@ def test_converter():
                                             {
                                                 "container": {
                                                     "imageUri": "imageUri",
-                                                    "entrypoint": "bash",
-                                                    "commands": ["-c", "${fullcommand}", "&&", "echo", "done"],
+                                                    "entrypoint": "/bin/bash",
+                                                    "commands": [
+                                                        "-c",
+                                                        "dbt --no-write-json ${command} --target env_execution --project-dir /dbt --profiles-dir /root/.dbt --select ${select}",
+                                                    ],
                                                     "volumes": ["key_volume_path"],
                                                 },
                                                 "environment": {
                                                     "variables": {
                                                         "GCP_KEY_PATH": "key_path",
-                                                        "GCP_PROJECT": "dataops-test-project",
+                                                        "GCP_PROJECT": "project_id",
                                                     }
                                                 },
                                             }

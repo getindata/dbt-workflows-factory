@@ -1,17 +1,18 @@
-from dbt_workflows_factory.tasks import SingleTask
+from dbt_workflows_factory.tasks import SingleTask, TaskCommand
 
 
 def test_task():
-    task = SingleTask("task_alias", "task_command", "job_id")
+    task = SingleTask("task_alias", "task_select", TaskCommand.RUN, "my_job_id")
     assert task.get_step() == {
         "task_alias": {
             "call": "subworkflowBatchJob",
             "args": {
                 "batchApiUrl": "${batchApiUrl}",
-                "command": "task_command",
-                "jobId": "job_id",
+                "select": "task_select",
+                "command": "run",
+                "jobId": "my_job_id",
                 "imageUri": "${imageUri}",
             },
-            "result": "${job_id}Result",
+            "result": "my_job_id_RESULT",
         }
     }
