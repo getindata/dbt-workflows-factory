@@ -50,6 +50,7 @@ def cli() -> None:
     help="Job ID suffix",
     required=False,
     default=f'"{int(datetime.now(tz=timezone(offset=timedelta(hours=0))).timestamp())}"',
+    show_default=True,
 )
 @click.option(
     "--pretty",
