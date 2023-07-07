@@ -5,7 +5,7 @@ from typing import Any
 from dbt_graph_builder.workflow import Step
 
 from .params import Params
-from .tasks import ChainTask
+from .tasks import ChainTask, CustomTask
 
 
 class MainChainTask(ChainTask):
@@ -20,26 +20,6 @@ class MainChainTask(ChainTask):
         """
         super().__init__(step, next_step)
         self._task_alias = "main"
-
-
-class SimpleSingleTask(Step):
-    """Simple single task in workflow."""
-
-    def __init__(self, get_step_def: dict[str, Any]) -> None:
-        """Create a new simple single task.
-
-        Args:
-            get_step_def (dict[str, Any]): The step definition.
-        """
-        self._get_step_def = get_step_def
-
-    def get_step(self) -> dict[str, Any]:
-        """Return a step result.
-
-        Returns:
-            dict[str, Any]: Step result.
-        """
-        return self._get_step_def
 
 
 class TaskYamlBuilder:
@@ -72,7 +52,7 @@ class TaskYamlBuilder:
         return yaml_representation
 
     def _init_step(self) -> Step:
-        return SimpleSingleTask(
+        return CustomTask(
             {
                 "init": {
                     "assign": [

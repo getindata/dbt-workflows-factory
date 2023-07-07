@@ -144,7 +144,7 @@ class WorkflowTaskFactory(StepFactory):
         if node_definition["node_type"] == NodeType.RUN_TEST:
             run_task = NodeTask(node_definition["alias"], node_definition["select"], TaskCommand.RUN, job_id)
             test_task = NodeTask(node_definition["alias"], node_definition["select"], TaskCommand.TEST, job_id)
-            return ChainStep(run_task, ChainStep(test_task))
+            return ChainTask(run_task, ChainTask(test_task))
 
         if node_definition["node_type"] == NodeType.MULTIPLE_DEPS_TEST:
             return NodeTask(node_definition["alias"], node_definition["select"], TaskCommand.TEST, job_id)
