@@ -141,12 +141,12 @@ class WorkflowStepFactory(StepFactory):
         Returns:
             SingleTask: SingleTask instance.
         """
-        job_id: str = self._job_id_replace_pattern.sub("-", node).lower()[0:50]
+        job_id: str = self._job_id_replace_pattern.sub("-", node).lower()[0:45]
         task_name: str = self._task_name_replace_pattern.sub("_", node)
 
         if node_definition["node_type"] == NodeType.RUN_TEST:
-            run_task = NodeStep(f"{task_name}_run", node_definition["select"], DbtCommand.RUN, job_id)
-            test_task = NodeStep(f"{task_name}_test", node_definition["select"], DbtCommand.TEST, job_id)
+            run_task = NodeStep(f"{task_name}_run", node_definition["select"], DbtCommand.RUN, f"{job_id}-run")
+            test_task = NodeStep(f"{task_name}_test", node_definition["select"], DbtCommand.TEST, f"{job_id}-test")
             return WorkflowChainStep(run_task, WorkflowChainStep(test_task))
 
         if node_definition["node_type"] == NodeType.MULTIPLE_DEPS_TEST:
