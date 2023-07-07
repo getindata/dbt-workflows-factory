@@ -6,11 +6,6 @@
 
 Creates dbt based GCP workflows.
 
-[//]: # (## Documentation)
-
-[//]: # ()
-[//]: # (Read the full documentation at [https://dbt-workflows-factory.readthedocs.io/]&#40;https://dbt-workflows-factory.readthedocs.io/en/latest/index.html&#41;)
-
 ## Installation
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install [dbt-workflows-factory](https://pypi.org/project/dbt-workflows-factory/) for [dp (data-pipelines-cli)]:
 
