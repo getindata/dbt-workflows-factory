@@ -6,35 +6,29 @@
 
 Creates dbt based GCP workflows.
 
-[//]: # (## Documentation)
-
-[//]: # ()
-[//]: # (Read the full documentation at [https://dbt-workflows-factory.readthedocs.io/]&#40;https://dbt-workflows-factory.readthedocs.io/en/latest/index.html&#41;)
-
 ## Installation
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install [dbt-workflows-factory](https://pypi.org/project/dbt-workflows-factory/) for [dp (data-pipelines-cli)]:
 
 ```bash
 pip install dbt-workflows-factory
 ```
-### Params
 
-Parameters specified for the converters are:
-1. `image_uri`: url address for the image
-2. `region`: the location where tge workflow executes on GCP (example: `us-central1` or `europe-west1`)
-3. `full_command`: full command executed on image (example: `"dbt --no-write-json run --target env_execution --project-dir /dbt --profiles-dir /root/.dbt --select "`)
-4. `remote_path`: gcs mount path (example: ` "/mnt/disks/var"`)
-5. `key_volume_mount_path`: path for mounting the volume containg key (ex. `/mnt/disks/var/keyfile_name.json`)
-6. `key_volume_path`: path for mounting (ex. `["/mnt/disks/var/:/mnt/disks/var/:rw"]`)
-7. `key_path`:  is a remote path for bucket containing key to be mounted
 
 ### How to run
 
 To call from cli, you can
 
-```
-python -m dbt_workflows_factory.cli path/to/manifest.json --image-uri xxx --region xxx --full-command xxx --remote-path xxx --key-volume-mount-path xxx --key-volume-path xxx --key-path xxx
-
+```bash
+python -m dbt_workflows_factory.cli convert \
+    --image-uri my-image-uri \
+    --region europe-west6 \
+    --gcs-key-volume-remote-path google-cloud-storage/path/ \
+    --gcs-key-volume-mount-path /etc/gcs-key/ \
+    --gcs-key-volume-container-mount-path /etc/gcs-key/:/etc/gcs-key/:ro \
+    --container-gcp-key-path /etc/gcs-key/path.json \
+    --container-gcp-project-id some-project-id \
+    --pretty \
+    tests/unit/dbt_workflows_factory/test_data/manifest.json > workflow_source.json
 ```
 
 ## Project Organization

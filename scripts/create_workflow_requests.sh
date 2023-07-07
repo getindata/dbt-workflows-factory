@@ -7,7 +7,7 @@ python -m dbt_workflows_factory.cli convert \
     --gcs-key-volume-mount-path /etc/gcs-key/ \
     --gcs-key-volume-container-mount-path /etc/gcs-key/:/etc/gcs-key/:ro \
     --container-gcp-key-path /etc/gcs-key/path.json \
-    --container-gcp-project-id gid-dataops-labs \
+    --container-gcp-project-id some-project-id \
     --pretty \
     tests/unit/dbt_workflows_factory/test_data/manifest.json > workflow_source.json
 
