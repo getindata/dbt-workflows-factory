@@ -84,9 +84,20 @@ class TaskYamlBuilder:
     @property
     def _subworkflow_job_steps(self) -> list[dict[str, Any]]:
         return [
+            self._subwork_init_job,
             self._subwork_main_job,
             self._subwork_get_job,
         ]
+
+    @property
+    def _subwork_init_job(self) -> dict[str, Any]:
+        return {
+            "init": {
+                "assign": [
+                    {"jobId": f'${{jobId + "-" + {self._params.job_id_suffix}}}'},
+                ]
+            }
+        }
 
     @property
     def _subwork_main_job(self) -> dict[str, Any]:
@@ -102,7 +113,7 @@ class TaskYamlBuilder:
     def _subwork_job_args(self) -> dict[str, Any]:
         return {
             "url": "${batchApiUrl}",
-            "query": {"job_id": "${jobId}"},
+            "query": {"jobId": "${jobId}"},
             "headers": {"Content-Type": "application/json"},
             "auth": {"type": "OAuth2"},
             "body": {

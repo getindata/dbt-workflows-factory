@@ -12,11 +12,12 @@ def test_converter():
             gcs_key_volume_container_mount_path="key_volume_path",
             container_gcp_key_path="key_path",
             container_gcp_project_id="project_id",
+            job_id_suffix="suffix",
         ),
         manifest_path="tests/unit/dbt_workflows_factory/test_data/manifest.json",
     )
     assert converter.get_yaml() == {
-        "main": {
+        "chain_14": {
             "steps": [
                 {
                     "init": {
@@ -32,12 +33,12 @@ def test_converter():
                     }
                 },
                 {
-                    "orders": {
+                    "model_pipeline_example_orders": {
                         "call": "subworkflowBatchJob",
                         "args": {
+                            "jobId": "model-pipeline-example-orders",
                             "batchApiUrl": "${batchApiUrl}",
                             "select": "orders",
-                            "jobId": "model_pipeline_example_orders",
                             "imageUri": "${imageUri}",
                             "command": "run",
                         },
@@ -45,12 +46,12 @@ def test_converter():
                     }
                 },
                 {
-                    "orders": {
+                    "model_pipeline_example_orders": {
                         "call": "subworkflowBatchJob",
                         "args": {
+                            "jobId": "model-pipeline-example-orders",
                             "batchApiUrl": "${batchApiUrl}",
                             "select": "orders",
-                            "jobId": "model_pipeline_example_orders",
                             "imageUri": "${imageUri}",
                             "command": "test",
                         },
@@ -58,19 +59,19 @@ def test_converter():
                     }
                 },
                 {
-                    "parallel-2": {
+                    "parallel_2": {
                         "parallel": {
                             "branches": [
                                 {
-                                    "chain-5": {
+                                    "chain_5": {
                                         "steps": [
                                             {
-                                                "supplier_parts": {
+                                                "model_pipeline_example_supplier_parts": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
+                                                        "jobId": "model-pipeline-example-supplier-parts",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "supplier_parts",
-                                                        "jobId": "model_pipeline_example_supplier_parts",
                                                         "imageUri": "${imageUri}",
                                                         "command": "run",
                                                     },
@@ -78,12 +79,12 @@ def test_converter():
                                                 }
                                             },
                                             {
-                                                "supplier_parts": {
+                                                "model_pipeline_example_supplier_parts": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
+                                                        "jobId": "model-pipeline-example-supplier-parts",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "supplier_parts",
-                                                        "jobId": "model_pipeline_example_supplier_parts",
                                                         "imageUri": "${imageUri}",
                                                         "command": "test",
                                                     },
@@ -94,15 +95,15 @@ def test_converter():
                                     }
                                 },
                                 {
-                                    "chain-8": {
+                                    "chain_8": {
                                         "steps": [
                                             {
-                                                "all_europe_region_countries": {
+                                                "model_pipeline_example_all_europe_region_countries": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
+                                                        "jobId": "model-pipeline-example-all-europe-region-countries",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "all_europe_region_countries",
-                                                        "jobId": "model_pipeline_example_all_europe_region_countries",
                                                         "imageUri": "${imageUri}",
                                                         "command": "run",
                                                     },
@@ -110,12 +111,12 @@ def test_converter():
                                                 }
                                             },
                                             {
-                                                "all_europe_region_countries": {
+                                                "model_pipeline_example_all_europe_region_countries": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
+                                                        "jobId": "model-pipeline-example-all-europe-region-countries",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "all_europe_region_countries",
-                                                        "jobId": "model_pipeline_example_all_europe_region_countries",
                                                         "imageUri": "${imageUri}",
                                                         "command": "test",
                                                     },
@@ -130,12 +131,12 @@ def test_converter():
                     }
                 },
                 {
-                    "report": {
+                    "model_pipeline_example_report": {
                         "call": "subworkflowBatchJob",
                         "args": {
+                            "jobId": "model-pipeline-example-report",
                             "batchApiUrl": "${batchApiUrl}",
                             "select": "report",
-                            "jobId": "model_pipeline_example_report",
                             "imageUri": "${imageUri}",
                             "command": "run",
                         },
@@ -143,12 +144,12 @@ def test_converter():
                     }
                 },
                 {
-                    "report": {
+                    "model_pipeline_example_report": {
                         "call": "subworkflowBatchJob",
                         "args": {
+                            "jobId": "model-pipeline-example-report",
                             "batchApiUrl": "${batchApiUrl}",
                             "select": "report",
-                            "jobId": "model_pipeline_example_report",
                             "imageUri": "${imageUri}",
                             "command": "test",
                         },
@@ -160,12 +161,13 @@ def test_converter():
         "subworkflowBatchJob": {
             "params": ["batchApiUrl", "command", "jobId", "imageUri", "select"],
             "steps": [
+                {"init": {"assign": [{"jobId": '${jobId + "-" + suffix}'}]}},
                 {
                     "createAndRunBatchJob": {
                         "call": "http.post",
                         "args": {
                             "url": "${batchApiUrl}",
-                            "query": {"job_id": "${jobId}"},
+                            "query": {"jobId": "${jobId}"},
                             "headers": {"Content-Type": "application/json"},
                             "auth": {"type": "OAuth2"},
                             "body": {
@@ -181,7 +183,7 @@ def test_converter():
                                                     "entrypoint": "/bin/bash",
                                                     "commands": [
                                                         "-c",
-                                                        "dbt --no-write-json ${command} --target env_execution --project-dir /dbt --profiles-dir /root/.dbt --select ${select}",
+                                                        '${"dbt --no-write-json " + command + " --target env_execution --project-dir /dbt --profiles-dir /root/.dbt --select " + select}',
                                                     ],
                                                     "volumes": ["key_volume_path"],
                                                 },
@@ -223,11 +225,12 @@ def test_converter_2():
             gcs_key_volume_container_mount_path="key_volume_path",
             container_gcp_key_path="key_path",
             container_gcp_project_id="project_id",
+            job_id_suffix="suffix",
         ),
         manifest_path="tests/unit/dbt_workflows_factory/test_data/manifest_2.json",
     )
     assert converter.get_yaml(show_ephemeral_models=True) == {
-        "main": {
+        "chain_54": {
             "steps": [
                 {
                     "init": {
@@ -243,17 +246,17 @@ def test_converter_2():
                     }
                 },
                 {
-                    "parallel-7": {
+                    "parallel_7": {
                         "parallel": {
                             "branches": [
                                 {
-                                    "chain-18": {
+                                    "chain_18": {
                                         "steps": [
                                             {
-                                                "model1": {
+                                                "model_dbt_test_model1": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model1",
+                                                        "jobId": "model-dbt-test-model1",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model1",
                                                         "imageUri": "${imageUri}",
@@ -263,10 +266,10 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "model1": {
+                                                "model_dbt_test_model1": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model1",
+                                                        "jobId": "model-dbt-test-model1",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model1",
                                                         "imageUri": "${imageUri}",
@@ -276,10 +279,10 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "model2": {
+                                                "model_dbt_test_model2": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model2",
+                                                        "jobId": "model-dbt-test-model2",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model2",
                                                         "imageUri": "${imageUri}",
@@ -289,10 +292,10 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "model2": {
+                                                "model_dbt_test_model2": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model2",
+                                                        "jobId": "model-dbt-test-model2",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model2",
                                                         "imageUri": "${imageUri}",
@@ -305,13 +308,13 @@ def test_converter_2():
                                     }
                                 },
                                 {
-                                    "chain-25": {
+                                    "chain_25": {
                                         "steps": [
                                             {
-                                                "model5": {
+                                                "model_dbt_test_model5": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model5",
+                                                        "jobId": "model-dbt-test-model5",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model5",
                                                         "imageUri": "${imageUri}",
@@ -321,10 +324,10 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "model5": {
+                                                "model_dbt_test_model5": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model5",
+                                                        "jobId": "model-dbt-test-model5",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model5",
                                                         "imageUri": "${imageUri}",
@@ -337,13 +340,13 @@ def test_converter_2():
                                     }
                                 },
                                 {
-                                    "chain-28": {
+                                    "chain_28": {
                                         "steps": [
                                             {
-                                                "model6": {
+                                                "model_dbt_test_model6": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model6",
+                                                        "jobId": "model-dbt-test-model6",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model6",
                                                         "imageUri": "${imageUri}",
@@ -353,10 +356,10 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "model6": {
+                                                "model_dbt_test_model6": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model6",
+                                                        "jobId": "model-dbt-test-model6",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model6",
                                                         "imageUri": "${imageUri}",
@@ -366,17 +369,17 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "parallel-6": {
+                                                "parallel_6": {
                                                     "parallel": {
                                                         "branches": [
                                                             {
-                                                                "chain-31": {
+                                                                "chain_31": {
                                                                     "steps": [
                                                                         {
-                                                                            "model7": {
+                                                                            "model_dbt_test_model7": {
                                                                                 "call": "subworkflowBatchJob",
                                                                                 "args": {
-                                                                                    "jobId": "model_dbt_test_model7",
+                                                                                    "jobId": "model-dbt-test-model7",
                                                                                     "batchApiUrl": "${batchApiUrl}",
                                                                                     "select": "model7",
                                                                                     "imageUri": "${imageUri}",
@@ -386,10 +389,10 @@ def test_converter_2():
                                                                             }
                                                                         },
                                                                         {
-                                                                            "model7": {
+                                                                            "model_dbt_test_model7": {
                                                                                 "call": "subworkflowBatchJob",
                                                                                 "args": {
-                                                                                    "jobId": "model_dbt_test_model7",
+                                                                                    "jobId": "model-dbt-test-model7",
                                                                                     "batchApiUrl": "${batchApiUrl}",
                                                                                     "select": "model7",
                                                                                     "imageUri": "${imageUri}",
@@ -402,13 +405,13 @@ def test_converter_2():
                                                                 }
                                                             },
                                                             {
-                                                                "chain-34": {
+                                                                "chain_34": {
                                                                     "steps": [
                                                                         {
-                                                                            "model8": {
+                                                                            "model_dbt_test_model8": {
                                                                                 "call": "subworkflowBatchJob",
                                                                                 "args": {
-                                                                                    "jobId": "model_dbt_test_model8",
+                                                                                    "jobId": "model-dbt-test-model8",
                                                                                     "batchApiUrl": "${batchApiUrl}",
                                                                                     "select": "model8",
                                                                                     "imageUri": "${imageUri}",
@@ -418,10 +421,10 @@ def test_converter_2():
                                                                             }
                                                                         },
                                                                         {
-                                                                            "model8": {
+                                                                            "model_dbt_test_model8": {
                                                                                 "call": "subworkflowBatchJob",
                                                                                 "args": {
-                                                                                    "jobId": "model_dbt_test_model8",
+                                                                                    "jobId": "model-dbt-test-model8",
                                                                                     "batchApiUrl": "${batchApiUrl}",
                                                                                     "select": "model8",
                                                                                     "imageUri": "${imageUri}",
@@ -445,17 +448,17 @@ def test_converter_2():
                     }
                 },
                 {
-                    "parallel-9": {
+                    "parallel_9": {
                         "parallel": {
                             "branches": [
                                 {
-                                    "chain-39": {
+                                    "chain_39": {
                                         "steps": [
                                             {
-                                                "model3": {
+                                                "model_dbt_test_model3": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model3",
+                                                        "jobId": "model-dbt-test-model3",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model3",
                                                         "imageUri": "${imageUri}",
@@ -465,10 +468,10 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "model3": {
+                                                "model_dbt_test_model3": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model3",
+                                                        "jobId": "model-dbt-test-model3",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model3",
                                                         "imageUri": "${imageUri}",
@@ -481,13 +484,13 @@ def test_converter_2():
                                     }
                                 },
                                 {
-                                    "chain-42": {
+                                    "chain_42": {
                                         "steps": [
                                             {
-                                                "model9": {
+                                                "model_dbt_test_model9": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model9",
+                                                        "jobId": "model-dbt-test-model9",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model9",
                                                         "imageUri": "${imageUri}",
@@ -497,10 +500,10 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "model9": {
+                                                "model_dbt_test_model9": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model9",
+                                                        "jobId": "model-dbt-test-model9",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model9",
                                                         "imageUri": "${imageUri}",
@@ -517,10 +520,10 @@ def test_converter_2():
                     }
                 },
                 {
-                    "model10": {
+                    "model_dbt_test_model10": {
                         "call": "subworkflowBatchJob",
                         "args": {
-                            "jobId": "model_dbt_test_model10",
+                            "jobId": "model-dbt-test-model10",
                             "batchApiUrl": "${batchApiUrl}",
                             "select": "model10",
                             "imageUri": "${imageUri}",
@@ -530,10 +533,10 @@ def test_converter_2():
                     }
                 },
                 {
-                    "model10": {
+                    "model_dbt_test_model10": {
                         "call": "subworkflowBatchJob",
                         "args": {
-                            "jobId": "model_dbt_test_model10",
+                            "jobId": "model-dbt-test-model10",
                             "batchApiUrl": "${batchApiUrl}",
                             "select": "model10",
                             "imageUri": "${imageUri}",
@@ -543,17 +546,17 @@ def test_converter_2():
                     }
                 },
                 {
-                    "parallel-12": {
+                    "parallel_12": {
                         "parallel": {
                             "branches": [
                                 {
-                                    "chain-49": {
+                                    "chain_49": {
                                         "steps": [
                                             {
-                                                "model4": {
+                                                "model_dbt_test_model4": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model4",
+                                                        "jobId": "model-dbt-test-model4",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model4",
                                                         "imageUri": "${imageUri}",
@@ -563,10 +566,10 @@ def test_converter_2():
                                                 }
                                             },
                                             {
-                                                "model4": {
+                                                "model_dbt_test_model4": {
                                                     "call": "subworkflowBatchJob",
                                                     "args": {
-                                                        "jobId": "model_dbt_test_model4",
+                                                        "jobId": "model-dbt-test-model4",
                                                         "batchApiUrl": "${batchApiUrl}",
                                                         "select": "model4",
                                                         "imageUri": "${imageUri}",
@@ -579,7 +582,7 @@ def test_converter_2():
                                     }
                                 },
                                 {
-                                    "chain-50": {
+                                    "chain_50": {
                                         "steps": [
                                             {
                                                 "call": "sys.log",
@@ -601,12 +604,13 @@ def test_converter_2():
         "subworkflowBatchJob": {
             "params": ["batchApiUrl", "command", "jobId", "imageUri", "select"],
             "steps": [
+                {"init": {"assign": [{"jobId": '${jobId + "-" + suffix}'}]}},
                 {
                     "createAndRunBatchJob": {
                         "call": "http.post",
                         "args": {
                             "url": "${batchApiUrl}",
-                            "query": {"job_id": "${jobId}"},
+                            "query": {"jobId": "${jobId}"},
                             "headers": {"Content-Type": "application/json"},
                             "auth": {"type": "OAuth2"},
                             "body": {
@@ -622,7 +626,7 @@ def test_converter_2():
                                                     "entrypoint": "/bin/bash",
                                                     "commands": [
                                                         "-c",
-                                                        "dbt --no-write-json ${command} --target env_execution --project-dir /dbt --profiles-dir /root/.dbt --select ${select}",
+                                                        '${"dbt --no-write-json " + command + " --target env_execution --project-dir /dbt --profiles-dir /root/.dbt --select " + select}',
                                                     ],
                                                     "volumes": ["key_volume_path"],
                                                 },

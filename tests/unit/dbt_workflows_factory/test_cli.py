@@ -31,6 +31,8 @@ def test_convert(monkeypatch):
             "key_path",
             "--container-gcp-project-id",
             "project_id",
+            "--job-id-suffix",
+            '"my-suffix"',
             "tests/unit/dbt_workflows_factory/test_data/manifest.json",
         ],
     )
@@ -41,7 +43,9 @@ def test_convert(monkeypatch):
                 "gcs_key_volume_remote_path='remote_path', "
                 "gcs_key_volume_mount_path='key_volume_mount_path', "
                 "gcs_key_volume_container_mount_path='key_volume_path', "
-                "container_gcp_key_path='key_path', container_gcp_project_id='project_id')"
+                "container_gcp_key_path='key_path', "
+                "container_gcp_project_id='project_id', "
+                "job_id_suffix='\"my-suffix\"')"
             ),
             "manifest_path": "tests/unit/dbt_workflows_factory/test_data/manifest.json",
         }

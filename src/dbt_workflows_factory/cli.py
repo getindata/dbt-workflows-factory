@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timedelta, timezone
 
 import click
 
@@ -43,6 +44,13 @@ def cli() -> None:
     help="GCP project ID in the container",
     required=True,
 )
+@click.option(
+    "--job-id-suffix",
+    type=str,
+    help="Job ID suffix",
+    required=False,
+    default=f'"{int(datetime.now(tz=timezone(offset=timedelta(hours=0))).timestamp())}"',
+)
 def convert(
     manifest_file: str,
     image_uri: str,
@@ -52,6 +60,7 @@ def convert(
     gcs_key_volume_container_mount_path: str,
     container_gcp_key_path: str,
     container_gcp_project_id: str,
+    job_id_suffix: str,
 ) -> None:
     """Convert dbt manifest.json to YAML for GCP Workflows."""  # noqa: DCO020
     params = Params(
@@ -62,6 +71,7 @@ def convert(
         gcs_key_volume_container_mount_path=gcs_key_volume_container_mount_path,
         container_gcp_key_path=container_gcp_key_path,
         container_gcp_project_id=container_gcp_project_id,
+        job_id_suffix=job_id_suffix,
     )
     converter = DbtWorkflowsConverter(manifest_path=manifest_file, params=params)
     click.echo(json.dumps(converter.get_yaml()))

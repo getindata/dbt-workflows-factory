@@ -9,8 +9,8 @@ from dbt_graph_builder.node_type import NodeType
 from dbt_graph_builder.workflow import ChainStep, ParallelStep, Step, StepFactory
 
 
-class TaskCommand(Enum):
-    """Task command."""
+class DbtCommand(Enum):
+    """Dbt command."""
 
     RUN = "run"
     TEST = "test"
@@ -41,8 +41,8 @@ class NodeStep(Step):
     """Single task in workflow."""
 
     step_name: str
-    task_select: str
-    task_command: TaskCommand
+    select: str
+    command: DbtCommand
     job_id: str
 
     def get_step(self) -> dict[str, Any]:
@@ -57,9 +57,9 @@ class NodeStep(Step):
                 "args": {
                     "jobId": self.job_id,
                     "batchApiUrl": "${batchApiUrl}",
-                    "select": self.task_select,
+                    "select": self.select,
                     "imageUri": "${imageUri}",
-                    "command": self.task_command.value,
+                    "command": self.command.value,
                 },
                 "result": f"{self.step_name}_RESULT",
             }
@@ -79,7 +79,7 @@ class WorkflowChainStep(ChainStep):
             next_step (ChainStep | None, optional): The next step. Defaults to None.
         """
         super().__init__(step, next_step)
-        self._task_alias = f"chain_{self.chain_counter}"
+        self._step_name = f"chain_{self.chain_counter}"
         WorkflowChainStep.chain_counter += 1
 
     def get_step(self) -> dict[str, Any]:
@@ -89,9 +89,10 @@ class WorkflowChainStep(ChainStep):
             dict[str, Any]: Step result.
         """
         if self._next_step is None:
-            return {self._task_alias: {"steps": [self._step.get_step()]}}
+            return {self._step_name: {"steps": [self._step.get_step()]}}
+
         return {
-            self._task_alias: {
+            self._step_name: {
                 "steps": [self._step.get_step(), *(next(iter(self._next_step.get_step().values()))["steps"])]
             }
         }
@@ -144,12 +145,12 @@ class WorkflowStepFactory(StepFactory):
         task_name: str = self._task_name_replace_pattern.sub("_", node)
 
         if node_definition["node_type"] == NodeType.RUN_TEST:
-            run_task = NodeStep(task_name, node_definition["select"], TaskCommand.RUN, job_id)
-            test_task = NodeStep(task_name, node_definition["select"], TaskCommand.TEST, job_id)
+            run_task = NodeStep(task_name, node_definition["select"], DbtCommand.RUN, job_id)
+            test_task = NodeStep(task_name, node_definition["select"], DbtCommand.TEST, job_id)
             return WorkflowChainStep(run_task, WorkflowChainStep(test_task))
 
         if node_definition["node_type"] == NodeType.MULTIPLE_DEPS_TEST:
-            return NodeStep(task_name, node_definition["select"], TaskCommand.TEST, job_id)
+            return NodeStep(task_name, node_definition["select"], DbtCommand.TEST, job_id)
 
         if node_definition["node_type"] == NodeType.EPHEMERAL:
             return CustomStep(

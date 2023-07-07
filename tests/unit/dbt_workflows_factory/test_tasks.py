@@ -1,8 +1,8 @@
-from dbt_workflows_factory.tasks import CustomStep, NodeStep, TaskCommand
+from dbt_workflows_factory.tasks import CustomStep, DbtCommand, NodeStep
 
 
 def test_task():
-    task = NodeStep("task_alias", "task_select", TaskCommand.RUN, "my_job_id")
+    task = NodeStep("task_alias", "task_select", DbtCommand.RUN, "my_job_id")
     assert task.get_step() == {
         "task_alias": {
             "call": "subworkflowBatchJob",
@@ -10,7 +10,7 @@ def test_task():
                 "batchApiUrl": "${batchApiUrl}",
                 "select": "task_select",
                 "command": "run",
-                "jobId": '${"my_job_id_" + string(int(sys.now))}',
+                "jobId": "my_job_id",
                 "imageUri": "${imageUri}",
             },
             "result": "task_alias_RESULT",
