@@ -10,7 +10,7 @@ from dbt_graph_builder.builder import (
 from dbt_graph_builder.workflow import SequentialStepsGraphFactory
 
 from .params import Params
-from .tasks import WorkflowTaskFactory
+from .tasks import WorkflowStepFactory
 from .yaml_builder import TaskYamlBuilder
 
 
@@ -49,7 +49,7 @@ class DbtWorkflowsConverter:
                 enable_dags_dependencies=enable_dags_dependencies,
             ),
         )
-        tasks = SequentialStepsGraphFactory(dag, WorkflowTaskFactory()).get_workflow()
+        tasks = SequentialStepsGraphFactory(dag, WorkflowStepFactory()).get_workflow()
         yaml_builder = TaskYamlBuilder(self._params)
         result = yaml_builder.create_workflow(tasks)
         return result

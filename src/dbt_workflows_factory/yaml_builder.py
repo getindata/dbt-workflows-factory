@@ -5,13 +5,13 @@ from typing import Any
 from dbt_graph_builder.workflow import Step
 
 from .params import Params
-from .tasks import ChainTask, CustomTask
+from .tasks import WorkflowChainStep, CustomStep
 
 
-class MainChainTask(ChainTask):
+class MainChainTask(WorkflowChainStep):
     """Main chain task in workflow."""
 
-    def __init__(self, step: Step, next_step: ChainTask | None = None) -> None:
+    def __init__(self, step: Step, next_step: WorkflowChainStep | None = None) -> None:
         """Create a new main chain task.
 
         Args:
@@ -52,7 +52,7 @@ class TaskYamlBuilder:
         return yaml_representation
 
     def _init_step(self) -> Step:
-        return CustomTask(
+        return CustomStep(
             {
                 "init": {
                     "assign": [
@@ -134,8 +134,8 @@ class TaskYamlBuilder:
                     "entrypoint": "/bin/bash",
                     "commands": [
                         "-c",
-                        "dbt --no-write-json ${command} --target env_execution --project-dir /dbt "
-                        "--profiles-dir /root/.dbt --select ${select}",
+                        '${"dbt --no-write-json " + command + " --target env_execution --project-dir /dbt '
+                        '--profiles-dir /root/.dbt --select " + select}',
                     ],
                     "volumes": [self._params.gcs_key_volume_container_mount_path],
                 },

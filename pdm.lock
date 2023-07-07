@@ -9,7 +9,7 @@ summary = "Validate configuration and produce human readable error messages."
 
 [[package]]
 name = "click"
-version = "8.1.3"
+version = "8.1.4"
 requires_python = ">=3.7"
 summary = "Composable command line interface toolkit"
 dependencies = [
@@ -41,7 +41,7 @@ dependencies = [
 
 [[package]]
 name = "dbt-graph-builder"
-version = "0.4.1"
+version = "0.5.0"
 requires_python = ">=3.9"
 summary = "DBT Graph Builder"
 dependencies = [
@@ -205,16 +205,16 @@ dependencies = [
 lock_version = "4.2"
 cross_platform = true
 groups = ["default", "dev"]
-content_hash = "sha256:1c6ba93b2c246fd3f1cf71fc14fecaf9083fcba42f781feec8af81e045d9eb49"
+content_hash = "sha256:d2b1ca99387f607b7ee2e5cca6f9e11b83f47ee5eda50ddcf048f7f27de62a42"
 
 [metadata.files]
 "cfgv 3.3.1" = [
     {url = "https://files.pythonhosted.org/packages/6d/82/0a0ebd35bae9981dea55c06f8e6aaf44a49171ad798795c72c6f64cba4c2/cfgv-3.3.1-py2.py3-none-any.whl", hash = "sha256:c6a0883f3917a037485059700b9e75da2464e6c27051014ad85ba6aaa5884426"},
     {url = "https://files.pythonhosted.org/packages/c4/bf/d0d622b660d414a47dc7f0d303791a627663f554345b21250e39e7acb48b/cfgv-3.3.1.tar.gz", hash = "sha256:f5a830efb9ce7a445376bb66ec94c638a9787422f96264c98edc6bdeed8ab736"},
 ]
-"click 8.1.3" = [
-    {url = "https://files.pythonhosted.org/packages/59/87/84326af34517fca8c58418d148f2403df25303e02736832403587318e9e8/click-8.1.3.tar.gz", hash = "sha256:7682dc8afb30297001674575ea00d1814d808d6a36af415a82bd481d37ba7b8e"},
-    {url = "https://files.pythonhosted.org/packages/c2/f1/df59e28c642d583f7dacffb1e0965d0e00b218e0186d7858ac5233dce840/click-8.1.3-py3-none-any.whl", hash = "sha256:bb4d8133cb15a609f44e8213d9b391b0809795062913b383c62be0ee95b1db48"},
+"click 8.1.4" = [
+    {url = "https://files.pythonhosted.org/packages/77/88/b0cc5fe95c31c301e9823ea9b028f669c0dcfa205ff71111037a5ed4892c/click-8.1.4.tar.gz", hash = "sha256:b97d0c74955da062a7d4ef92fadb583806a585b2ea81958a81bd72726cbb8e37"},
+    {url = "https://files.pythonhosted.org/packages/f9/a6/dc327484918f1656cc9fcebebe77efcfc0ef0d447fa925a8760ee55abe0e/click-8.1.4-py3-none-any.whl", hash = "sha256:2739815aaa5d2c986a88f1e9230c55e17f0caad3d958a5e13ad0797c166db9e3"},
 ]
 "colorama 0.4.6" = [
     {url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
@@ -282,9 +282,9 @@ content_hash = "sha256:1c6ba93b2c246fd3f1cf71fc14fecaf9083fcba42f781feec8af81e04
     {url = "https://files.pythonhosted.org/packages/fe/57/e4f8ad64d84ca9e759d783a052795f62a9f9111585e46068845b1cb52c2b/coverage-7.2.7-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6f48351d66575f535669306aa7d6d6f71bc43372473b54a832222803eb956fd1"},
     {url = "https://files.pythonhosted.org/packages/ff/d5/52fa1891d1802ab2e1b346d37d349cb41cdd4fd03f724ebbf94e80577687/coverage-7.2.7-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:f2f67fe12b22cd130d34d0ef79206061bfb5eda52feb6ce0dba0644e20a03cf4"},
 ]
-"dbt-graph-builder 0.4.1" = [
-    {url = "https://files.pythonhosted.org/packages/5a/a6/5e6fecee45502395e9f3d68f7d6de8019e6a1d0ee084623bfe4e8fe8912a/dbt-graph-builder-0.4.1.tar.gz", hash = "sha256:b4d6f564636538fe9a509809c88b7d4e152004df5202ae4b3692f3764d7124b2"},
-    {url = "https://files.pythonhosted.org/packages/b6/3f/6fbe855ea2c586ffcff3205e106ddce64610c7d7192afc5ed6d9b2a5a537/dbt_graph_builder-0.4.1-py3-none-any.whl", hash = "sha256:0759012202eeb06ad4730400067a08fb9a1be2199426e30822df9bd056d3a55d"},
+"dbt-graph-builder 0.5.0" = [
+    {url = "https://files.pythonhosted.org/packages/3b/20/d0e7858ed222346c2958710dc79ca164c7dbb682ecaa3f6879501e9f4d59/dbt-graph-builder-0.5.0.tar.gz", hash = "sha256:5ada33a040fa5f12ecf9eb86b7663d42a72cec836cf952cf1d6cb275be1f0622"},
+    {url = "https://files.pythonhosted.org/packages/40/72/22d09c1cd5dbbac318d068ab8c869f8a27291d55696ecc4ae8111631ae8b/dbt_graph_builder-0.5.0-py3-none-any.whl", hash = "sha256:26fa254a8a23d71d06b2279ec806b8e9bf5619135bdd55ed1c8260c4a10dfa24"},
 ]
 "distlib 0.3.6" = [
     {url = "https://files.pythonhosted.org/packages/58/07/815476ae605bcc5f95c87a62b95e74a1bce0878bc7a3119bc2bf4178f175/distlib-0.3.6.tar.gz", hash = "sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46"},

@@ -1,8 +1,8 @@
-from dbt_workflows_factory.tasks import CustomTask, NodeTask, TaskCommand
+from dbt_workflows_factory.tasks import CustomStep, NodeStep, TaskCommand
 
 
 def test_task():
-    task = NodeTask("task_alias", "task_select", TaskCommand.RUN, "my_job_id")
+    task = NodeStep("task_alias", "task_select", TaskCommand.RUN, "my_job_id")
     assert task.get_step() == {
         "task_alias": {
             "call": "subworkflowBatchJob",
@@ -10,14 +10,14 @@ def test_task():
                 "batchApiUrl": "${batchApiUrl}",
                 "select": "task_select",
                 "command": "run",
-                "jobId": "my_job_id",
+                "jobId": '${"my_job_id_" + string(int(sys.now))}',
                 "imageUri": "${imageUri}",
             },
-            "result": "my_job_id_RESULT",
+            "result": "task_alias_RESULT",
         }
     }
 
 
 def test_custom_task():
-    task = CustomTask({"init": {"assign": [{"projectId": '${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'}]}})
+    task = CustomStep({"init": {"assign": [{"projectId": '${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'}]}})
     assert task.get_step() == {"init": {"assign": [{"projectId": '${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'}]}}

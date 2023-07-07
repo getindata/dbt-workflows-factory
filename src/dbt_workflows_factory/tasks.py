@@ -16,7 +16,7 @@ class TaskCommand(Enum):
     TEST = "test"
 
 
-class CustomTask(Step):
+class CustomStep(Step):
     """Simple single task in workflow."""
 
     def __init__(self, get_step_def: dict[str, Any]) -> None:
@@ -37,10 +37,10 @@ class CustomTask(Step):
 
 
 @dataclass(frozen=True)
-class NodeTask(Step):
+class NodeStep(Step):
     """Single task in workflow."""
 
-    task_alias: str
+    step_name: str
     task_select: str
     task_command: TaskCommand
     job_id: str
@@ -52,7 +52,7 @@ class NodeTask(Step):
             dict[str, Any]: Step result.
         """
         return {
-            self.task_alias: {
+            self.step_name: {
                 "call": "subworkflowBatchJob",
                 "args": {
                     "jobId": self.job_id,
@@ -61,12 +61,12 @@ class NodeTask(Step):
                     "imageUri": "${imageUri}",
                     "command": self.task_command.value,
                 },
-                "result": f"{self.job_id}_RESULT",
+                "result": f"{self.step_name}_RESULT",
             }
         }
 
 
-class ChainTask(ChainStep):
+class WorkflowChainStep(ChainStep):
     """Chain task in workflow."""
 
     chain_counter: int = 0
@@ -79,8 +79,8 @@ class ChainTask(ChainStep):
             next_step (ChainStep | None, optional): The next step. Defaults to None.
         """
         super().__init__(step, next_step)
-        self._task_alias = f"chain-{self.chain_counter}"
-        ChainTask.chain_counter += 1
+        self._task_alias = f"chain_{self.chain_counter}"
+        WorkflowChainStep.chain_counter += 1
 
     def get_step(self) -> dict[str, Any]:
         """Return a step result.
@@ -97,7 +97,7 @@ class ChainTask(ChainStep):
         }
 
 
-class ParallelTask(ParallelStep):
+class WorkflowParallelStep(ParallelStep):
     """Parallel task in workflow."""
 
     parallel_counter: int = 0
@@ -109,8 +109,8 @@ class ParallelTask(ParallelStep):
             steps (list[Step]): The parallel steps.
         """
         super().__init__(steps)
-        self._task_alias = f"parallel-{self.parallel_counter}"
-        ParallelTask.parallel_counter += 1
+        self._task_alias = f"parallel_{self.parallel_counter}"
+        WorkflowParallelStep.parallel_counter += 1
 
     def get_step(self) -> dict[str, Any]:
         """Return a step result.
@@ -121,10 +121,11 @@ class ParallelTask(ParallelStep):
         return {self._task_alias: {"parallel": {"branches": [step.get_step() for step in self._steps]}}}
 
 
-class WorkflowTaskFactory(StepFactory):
+class WorkflowStepFactory(StepFactory):
     """Workflow task factory."""
 
-    _re_pattern = re.compile(r"[^a-zA-Z0-9_]")
+    _job_id_replace_pattern = re.compile(r"[^a-zA-Z0-9\-]")
+    _task_name_replace_pattern = re.compile(r"[^a-zA-Z0-9_]")
 
     def create_node_step(self, node: str, node_definition: dict[str, Any]) -> Step:
         """Create a single step.
@@ -139,18 +140,19 @@ class WorkflowTaskFactory(StepFactory):
         Returns:
             SingleTask: SingleTask instance.
         """
-        job_id: str = self._re_pattern.sub("_", node)
+        job_id: str = self._job_id_replace_pattern.sub("-", node).lower()[0:50]
+        task_name: str = self._task_name_replace_pattern.sub("_", node)
 
         if node_definition["node_type"] == NodeType.RUN_TEST:
-            run_task = NodeTask(node_definition["alias"], node_definition["select"], TaskCommand.RUN, job_id)
-            test_task = NodeTask(node_definition["alias"], node_definition["select"], TaskCommand.TEST, job_id)
-            return ChainTask(run_task, ChainTask(test_task))
+            run_task = NodeStep(task_name, node_definition["select"], TaskCommand.RUN, job_id)
+            test_task = NodeStep(task_name, node_definition["select"], TaskCommand.TEST, job_id)
+            return WorkflowChainStep(run_task, WorkflowChainStep(test_task))
 
         if node_definition["node_type"] == NodeType.MULTIPLE_DEPS_TEST:
-            return NodeTask(node_definition["alias"], node_definition["select"], TaskCommand.TEST, job_id)
+            return NodeStep(task_name, node_definition["select"], TaskCommand.TEST, job_id)
 
         if node_definition["node_type"] == NodeType.EPHEMERAL:
-            return CustomTask(
+            return CustomStep(
                 {
                     "call": "sys.log",
                     "args": {"text": f"Skipping ephemeral node: {node_definition['alias']}", "severity": "INFO"},
@@ -159,7 +161,7 @@ class WorkflowTaskFactory(StepFactory):
 
         raise NotImplementedError(f"Unsupported node type: {node_definition['node_type']}")
 
-    def create_chain_step(self, task: Step) -> ChainTask:
+    def create_chain_step(self, task: Step) -> WorkflowChainStep:
         """Create a chain step.
 
         Args:
@@ -168,12 +170,12 @@ class WorkflowTaskFactory(StepFactory):
         Returns:
             ChainTask: ChainTask instance.
         """
-        return ChainTask(task)
+        return WorkflowChainStep(task)
 
-    def create_parallel_step(self) -> ParallelTask:
+    def create_parallel_step(self) -> WorkflowParallelStep:
         """Create a parallel step.
 
         Returns:
             ParallelTask: ParallelTask instance.
         """
-        return ParallelTask([])
+        return WorkflowParallelStep([])
