@@ -3,7 +3,7 @@
 python -m dbt_workflows_factory.cli convert \
     --image-uri my-image-uri \
     --region europe-west6 \
-    --gcs-key-volume-remote-path gs/key/path.json \
+    --gcs-key-volume-remote-path google-cloud-storage/path/ \
     --gcs-key-volume-mount-path /etc/gcs-key/ \
     --gcs-key-volume-container-mount-path /etc/gcs-key/:/etc/gcs-key/:ro \
     --container-gcp-key-path /etc/gcs-key/path.json \

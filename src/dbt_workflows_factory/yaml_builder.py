@@ -141,7 +141,7 @@ class TaskYamlBuilder:
         return [
             {
                 "container": {
-                    "imageUri": "imageUri",
+                    "imageUri": "${imageUri}",
                     "entrypoint": "/bin/bash",
                     "commands": [
                         "-c",

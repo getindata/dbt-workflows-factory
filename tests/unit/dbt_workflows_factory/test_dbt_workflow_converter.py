@@ -179,7 +179,7 @@ def test_converter():
                                         "runnables": [
                                             {
                                                 "container": {
-                                                    "imageUri": "imageUri",
+                                                    "imageUri": "${imageUri}",
                                                     "entrypoint": "/bin/bash",
                                                     "commands": [
                                                         "-c",
@@ -622,7 +622,7 @@ def test_converter_2():
                                         "runnables": [
                                             {
                                                 "container": {
-                                                    "imageUri": "imageUri",
+                                                    "imageUri": "${imageUri}",
                                                     "entrypoint": "/bin/bash",
                                                     "commands": [
                                                         "-c",
