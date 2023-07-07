@@ -51,6 +51,14 @@ def cli() -> None:
     required=False,
     default=f'"{int(datetime.now(tz=timezone(offset=timedelta(hours=0))).timestamp())}"',
 )
+@click.option(
+    "--pretty",
+    type=bool,
+    help="Pretty print output",
+    required=False,
+    default=False,
+    is_flag=True,
+)
 def convert(
     manifest_file: str,
     image_uri: str,
@@ -61,6 +69,7 @@ def convert(
     container_gcp_key_path: str,
     container_gcp_project_id: str,
     job_id_suffix: str,
+    pretty: bool,
 ) -> None:
     """Convert dbt manifest.json to YAML for GCP Workflows."""  # noqa: DCO020
     params = Params(
@@ -74,7 +83,7 @@ def convert(
         job_id_suffix=job_id_suffix,
     )
     converter = DbtWorkflowsConverter(manifest_path=manifest_file, params=params)
-    click.echo(json.dumps(converter.get_yaml()))
+    click.echo(json.dumps(converter.get_yaml(), indent=2 if pretty else None))
 
 
 @cli.command()
