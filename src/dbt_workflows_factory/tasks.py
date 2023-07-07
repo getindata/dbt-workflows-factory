@@ -1,31 +1,49 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
+from dbt_graph_builder.node_type import NodeType
 from dbt_graph_builder.workflow import ChainStep, ParallelStep, Step, StepFactory
 
 
-@dataclass(frozen=True)
-class SingleTask(Step):
-    """Single task in workflow."""
+class DbtCommand(Enum):
+    """Dbt command."""
 
-    task_alias: str
-    task_command: str
-    job_id: str
+    RUN = "run"
+    TEST = "test"
 
-    @classmethod
-    def from_node(cls, job_id: str, node_def: dict[str, Any]) -> SingleTask:
-        """Create SingleTask from node definition.
+
+class CustomStep(Step):
+    """Simple single task in workflow."""
+
+    def __init__(self, get_step_def: dict[str, Any]) -> None:
+        """Create a new simple single task.
 
         Args:
-            job_id (str): Job id.
-            node_def (dict[str, Any]): Node definition.
+            get_step_def (dict[str, Any]): The step definition.
+        """
+        self._get_step_def = get_step_def
+
+    def get_step(self) -> dict[str, Any]:
+        """Return a step result.
 
         Returns:
-            SingleTask: SingleTask instance.
+            dict[str, Any]: Step result.
         """
-        return cls(node_def["alias"], node_def["select"], job_id)
+        return self._get_step_def
+
+
+@dataclass(frozen=True)
+class NodeStep(Step):
+    """Single task in workflow."""
+
+    step_name: str
+    select: str
+    command: DbtCommand
+    job_id: str
 
     def get_step(self) -> dict[str, Any]:
         """Return a step result.
@@ -34,20 +52,21 @@ class SingleTask(Step):
             dict[str, Any]: Step result.
         """
         return {
-            self.task_alias: {
+            self.step_name: {
                 "call": "subworkflowBatchJob",
                 "args": {
-                    "batchApiUrl": "${batchApiUrl}",
-                    "command": self.task_command,
                     "jobId": self.job_id,
+                    "batchApiUrl": "${batchApiUrl}",
+                    "select": self.select,
                     "imageUri": "${imageUri}",
+                    "command": self.command.value,
                 },
-                "result": f"${{{self.job_id}}}Result",
+                "result": f"{self.step_name}_RESULT",
             }
         }
 
 
-class ChainTask(ChainStep):
+class WorkflowChainStep(ChainStep):
     """Chain task in workflow."""
 
     chain_counter: int = 0
@@ -60,8 +79,8 @@ class ChainTask(ChainStep):
             next_step (ChainStep | None, optional): The next step. Defaults to None.
         """
         super().__init__(step, next_step)
-        self._task_alias = f"branch-{self.chain_counter}"
-        ChainTask.chain_counter += 1
+        self._step_name = f"chain_{self.chain_counter}"
+        WorkflowChainStep.chain_counter += 1
 
     def get_step(self) -> dict[str, Any]:
         """Return a step result.
@@ -70,15 +89,16 @@ class ChainTask(ChainStep):
             dict[str, Any]: Step result.
         """
         if self._next_step is None:
-            return {self._task_alias: {"steps": [self._step.get_step()]}}
+            return {self._step_name: {"steps": [self._step.get_step()]}}
+
         return {
-            self._task_alias: {
+            self._step_name: {
                 "steps": [self._step.get_step(), *(next(iter(self._next_step.get_step().values()))["steps"])]
             }
         }
 
 
-class ParallelTask(ParallelStep):
+class WorkflowParallelStep(ParallelStep):
     """Parallel task in workflow."""
 
     parallel_counter: int = 0
@@ -90,8 +110,8 @@ class ParallelTask(ParallelStep):
             steps (list[Step]): The parallel steps.
         """
         super().__init__(steps)
-        self._task_alias = f"parallel-{self.parallel_counter}"
-        ParallelTask.parallel_counter += 1
+        self._step_name = f"parallel_{self.parallel_counter}"
+        WorkflowParallelStep.parallel_counter += 1
 
     def get_step(self) -> dict[str, Any]:
         """Return a step result.
@@ -99,25 +119,50 @@ class ParallelTask(ParallelStep):
         Returns:
             dict[str, Any]: Step result.
         """
-        return {self._task_alias: {"parallel": {"branches": [step.get_step() for step in self._steps]}}}
+        return {self._step_name: {"parallel": {"branches": [step.get_step() for step in self._steps]}}}
 
 
-class WorkflowTaskFactory(StepFactory):
+class WorkflowStepFactory(StepFactory):
     """Workflow task factory."""
 
-    def create_single_step(self, node: str, node_definition: dict[str, Any]) -> SingleTask:
+    _job_id_replace_pattern = re.compile(r"[^a-zA-Z0-9\-]")
+    _task_name_replace_pattern = re.compile(r"[^a-zA-Z0-9_]")
+
+    def create_node_step(self, node: str, node_definition: dict[str, Any]) -> Step:
         """Create a single step.
 
         Args:
             node (str): Node name.
             node_definition (dict[str, Any]): Node definition.
 
+        Raises:
+            NotImplementedError: Unsupported node type.
+
         Returns:
             SingleTask: SingleTask instance.
         """
-        return SingleTask.from_node(node, node_definition)
+        job_id: str = self._job_id_replace_pattern.sub("-", node).lower()[0:50]
+        task_name: str = self._task_name_replace_pattern.sub("_", node)
 
-    def create_chain_step(self, task: Step) -> ChainTask:
+        if node_definition["node_type"] == NodeType.RUN_TEST:
+            run_task = NodeStep(task_name, node_definition["select"], DbtCommand.RUN, job_id)
+            test_task = NodeStep(task_name, node_definition["select"], DbtCommand.TEST, job_id)
+            return WorkflowChainStep(run_task, WorkflowChainStep(test_task))
+
+        if node_definition["node_type"] == NodeType.MULTIPLE_DEPS_TEST:
+            return NodeStep(task_name, node_definition["select"], DbtCommand.TEST, job_id)
+
+        if node_definition["node_type"] == NodeType.EPHEMERAL:
+            return CustomStep(
+                {
+                    "call": "sys.log",
+                    "args": {"text": f"Skipping ephemeral node: {node_definition['alias']}", "severity": "INFO"},
+                }
+            )
+
+        raise NotImplementedError(f"Unsupported node type: {node_definition['node_type']}")
+
+    def create_chain_step(self, task: Step) -> WorkflowChainStep:
         """Create a chain step.
 
         Args:
@@ -126,12 +171,12 @@ class WorkflowTaskFactory(StepFactory):
         Returns:
             ChainTask: ChainTask instance.
         """
-        return ChainTask(task)
+        return WorkflowChainStep(task)
 
-    def create_parallel_step(self) -> ParallelTask:
+    def create_parallel_step(self) -> WorkflowParallelStep:
         """Create a parallel step.
 
         Returns:
             ParallelTask: ParallelTask instance.
         """
-        return ParallelTask([])
+        return WorkflowParallelStep([])

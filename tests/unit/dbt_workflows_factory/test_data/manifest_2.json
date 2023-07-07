@@ -94,7 +94,7 @@
           ]
         },
         "config": {
-          "materialized": "table"
+          "materialized": "view"
         }
       },
       "model.dbt_test.model9": {
@@ -107,7 +107,7 @@
           ]
         },
         "config": {
-          "materialized": "table"
+          "materialized": "view"
         }
       },
       "model.dbt_test.model10": {
@@ -132,7 +132,7 @@
           ]
         },
         "config": {
-          "materialized": "table"
+          "materialized": "ephemeral"
         }
       },
       "model.dbt_test.model12": {
@@ -145,7 +145,7 @@
           ]
         },
         "config": {
-          "materialized": "table"
+          "materialized": "ephemeral"
         }
       }
     },

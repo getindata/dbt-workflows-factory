@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timedelta, timezone
 
 import click
 
@@ -18,50 +19,59 @@ def cli() -> None:
 @click.argument("manifest_file", type=click.Path(exists=True))
 @click.option("--image-uri", type=str, help="Docker image URI", required=True)
 @click.option("--region", type=str, help="GCP region", required=True)
+@click.option("--gcs-key-volume-remote-path", type=str, help="GCS Remote path for private key", required=True)
 @click.option(
-    "--full-command",
-    type=str,
-    help="Full command to run in container",
-    required=True,
-)
-@click.option("--remote-path", type=str, help="Path to remote file", required=True)
-@click.option(
-    "--key-volume-mount-path",
+    "--gcs-key-volume-mount-path",
     type=str,
     help="Volume mount path for private key",
     required=True,
 )
 @click.option(
-    "--key-volume-path",
+    "--gcs-key-volume-container-mount-path",
     type=str,
-    help="Path for the private key file on the host",
+    help="Volume mount path for private key in container",
     required=True,
 )
 @click.option(
-    "--key-path",
+    "--container-gcp-key-path",
     type=str,
     help="Path for the private key file in the container",
     required=True,
+)
+@click.option(
+    "--container-gcp-project-id",
+    type=str,
+    help="GCP project ID in the container",
+    required=True,
+)
+@click.option(
+    "--job-id-suffix",
+    type=str,
+    help="Job ID suffix",
+    required=False,
+    default=f'"{int(datetime.now(tz=timezone(offset=timedelta(hours=0))).timestamp())}"',
 )
 def convert(
     manifest_file: str,
     image_uri: str,
     region: str,
-    full_command: str,
-    remote_path: str,
-    key_volume_mount_path: str,
-    key_volume_path: str,
-    key_path: str,
+    gcs_key_volume_remote_path: str,
+    gcs_key_volume_mount_path: str,
+    gcs_key_volume_container_mount_path: str,
+    container_gcp_key_path: str,
+    container_gcp_project_id: str,
+    job_id_suffix: str,
 ) -> None:
     """Convert dbt manifest.json to YAML for GCP Workflows."""  # noqa: DCO020
     params = Params(
         image_uri=image_uri,
         region=region,
-        full_command=full_command,
-        remote_path=remote_path,
-        key_volume_mount_path=key_volume_mount_path,
-        key_volume_path=key_volume_path,
-        key_path=key_path,
+        gcs_key_volume_remote_path=gcs_key_volume_remote_path,
+        gcs_key_volume_mount_path=gcs_key_volume_mount_path,
+        gcs_key_volume_container_mount_path=gcs_key_volume_container_mount_path,
+        container_gcp_key_path=container_gcp_key_path,
+        container_gcp_project_id=container_gcp_project_id,
+        job_id_suffix=job_id_suffix,
     )
     converter = DbtWorkflowsConverter(manifest_path=manifest_file, params=params)
     click.echo(json.dumps(converter.get_yaml()))

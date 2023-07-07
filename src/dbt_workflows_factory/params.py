@@ -8,8 +8,9 @@ class Params(NamedTuple):
 
     image_uri: str
     region: str
-    full_command: str
-    remote_path: str
-    key_volume_mount_path: str
-    key_volume_path: str
-    key_path: str
+    gcs_key_volume_remote_path: str
+    gcs_key_volume_mount_path: str
+    gcs_key_volume_container_mount_path: str
+    container_gcp_key_path: str
+    container_gcp_project_id: str
+    job_id_suffix: str

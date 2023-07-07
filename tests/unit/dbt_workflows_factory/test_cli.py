@@ -21,30 +21,31 @@ def test_convert(monkeypatch):
             "image_uri",
             "--region",
             "region",
-            "--full-command",
-            "full_command",
-            "--remote-path",
+            "--gcs-key-volume-remote-path",
             "remote_path",
-            "--key-volume-mount-path",
+            "--gcs-key-volume-mount-path",
             "key_volume_mount_path",
-            "--key-volume-path",
+            "--gcs-key-volume-container-mount-path",
             "key_volume_path",
-            "--key-path",
+            "--container-gcp-key-path",
             "key_path",
+            "--container-gcp-project-id",
+            "project_id",
+            "--job-id-suffix",
+            '"my-suffix"',
             "tests/unit/dbt_workflows_factory/test_data/manifest.json",
         ],
     )
     params_result = json.dumps(
         {
             "params": (
-                "Params("
-                "image_uri='image_uri', "
-                "region='region', "
-                "full_command='full_command', "
-                "remote_path='remote_path', "
-                "key_volume_mount_path='key_volume_mount_path', "
-                "key_volume_path='key_volume_path', "
-                "key_path='key_path')"
+                "Params(image_uri='image_uri', region='region', "
+                "gcs_key_volume_remote_path='remote_path', "
+                "gcs_key_volume_mount_path='key_volume_mount_path', "
+                "gcs_key_volume_container_mount_path='key_volume_path', "
+                "container_gcp_key_path='key_path', "
+                "container_gcp_project_id='project_id', "
+                "job_id_suffix='\"my-suffix\"')"
             ),
             "manifest_path": "tests/unit/dbt_workflows_factory/test_data/manifest.json",
         }
