@@ -19,7 +19,7 @@ class MainChainTask(WorkflowChainStep):
             next_step (ChainTask | None, optional): The next step. Defaults to None.
         """
         super().__init__(step, next_step)
-        self._task_alias = "main"
+        self._step_name = "main"
 
 
 class TaskYamlBuilder:
@@ -141,7 +141,7 @@ class TaskYamlBuilder:
         return [
             {
                 "container": {
-                    "imageUri": "imageUri",
+                    "imageUri": "${imageUri}",
                     "entrypoint": "/bin/bash",
                     "commands": [
                         "-c",
