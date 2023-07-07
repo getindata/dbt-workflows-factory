@@ -131,7 +131,7 @@ class WorkflowTaskFactory(StepFactory):
 
         Args:
             node (str): Node name.
-            node_definitioninition (dict[str, Any]): Node definition.
+            node_definition (dict[str, Any]): Node definition.
 
         Raises:
             NotImplementedError: Unsupported node type.
