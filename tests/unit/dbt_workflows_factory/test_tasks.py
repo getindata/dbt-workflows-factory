@@ -7,11 +7,9 @@ def test_task():
         "task_alias": {
             "call": "subworkflowBatchJob",
             "args": {
-                "batchApiUrl": "${batchApiUrl}",
                 "select": "task_select",
                 "command": "run",
                 "jobId": "my_job_id",
-                "imageUri": "${imageUri}",
             },
             "result": "task_alias_RESULT",
         }

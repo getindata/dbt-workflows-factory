@@ -7,7 +7,8 @@ class Params(NamedTuple):
     """Parameters for workflows."""
 
     image_uri: str
-    region: str
+    location: str
+    project_id: str
     gcs_key_volume_remote_path: str
     gcs_key_volume_mount_path: str
     gcs_key_volume_container_mount_path: str

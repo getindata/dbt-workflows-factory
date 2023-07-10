@@ -5,7 +5,7 @@ from typing import Any
 from dbt_graph_builder.workflow import Step
 
 from .params import Params
-from .tasks import CustomStep, WorkflowChainStep
+from .tasks import WorkflowChainStep
 
 
 class MainChainTask(WorkflowChainStep):
@@ -45,30 +45,10 @@ class TaskYamlBuilder:
         Returns:
             dict[str, Any]: Workflow.
         """
-        maint_chain_task = MainChainTask(self._init_step())
-        maint_chain_task.add_step(additional_steps)
-        yaml_representation = maint_chain_task.get_step()
+        main_chain_task = MainChainTask(additional_steps)
+        yaml_representation = main_chain_task.get_step()
         yaml_representation["subworkflowBatchJob"] = self._subworkflow
         return yaml_representation
-
-    def _init_step(self) -> Step:
-        return CustomStep(
-            {
-                "init": {
-                    "assign": [
-                        {"projectId": '${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'},
-                        {"region": self._params.region},
-                        {"batchApi": "batch.googleapis.com/v1"},
-                        {
-                            "batchApiUrl": (
-                                '${"https://" + batchApi + "/projects/" + projectId + "/locations/" + region + "/jobs"}'
-                            )
-                        },
-                        {"imageUri": self._params.image_uri},
-                    ]
-                }
-            }
-        )
 
     @property
     def _subworkflow(self) -> dict[str, Any]:
@@ -79,14 +59,13 @@ class TaskYamlBuilder:
 
     @property
     def _subworkflow_job_params(self) -> list[str]:
-        return ["batchApiUrl", "command", "jobId", "imageUri", "select"]
+        return ["jobId", "command", "select"]
 
     @property
     def _subworkflow_job_steps(self) -> list[dict[str, Any]]:
         return [
             self._subwork_init_job,
             self._subwork_main_job,
-            self._subwork_get_job,
         ]
 
     @property
@@ -94,6 +73,8 @@ class TaskYamlBuilder:
         return {
             "init": {
                 "assign": [
+                    {"location": self._params.location},
+                    {"projectId": self._params.project_id},
                     {"jobId": f'${{jobId + "-" + {self._params.job_id_suffix}}}'},
                 ]
             }
@@ -103,7 +84,7 @@ class TaskYamlBuilder:
     def _subwork_main_job(self) -> dict[str, Any]:
         return {
             "createAndRunBatchJob": {
-                "call": "http.post",
+                "call": "googleapis.batch.v1.projects.locations.jobs.create",
                 "args": self._subwork_job_args,
                 "result": "createAndRunBatchJobResponse",
             }
@@ -112,10 +93,8 @@ class TaskYamlBuilder:
     @property
     def _subwork_job_args(self) -> dict[str, Any]:
         return {
-            "url": "${batchApiUrl}",
-            "query": {"jobId": "${jobId}"},
-            "headers": {"Content-Type": "application/json"},
-            "auth": {"type": "OAuth2"},
+            "parent": '${"projects/" + projectId + "/locations/" + location}',
+            "jobId": "${jobId}",
             "body": {
                 "taskGroups": {
                     "taskSpec": {
@@ -141,7 +120,7 @@ class TaskYamlBuilder:
         return [
             {
                 "container": {
-                    "imageUri": "${imageUri}",
+                    "imageUri": self._params.image_uri,
                     "entrypoint": "/bin/bash",
                     "commands": [
                         "-c",
@@ -158,16 +137,3 @@ class TaskYamlBuilder:
                 },
             }
         ]
-
-    @property
-    def _subwork_get_job(self) -> dict[str, Any]:
-        return {
-            "getJob": {
-                "call": "http.get",
-                "args": {
-                    "url": '${batchApiUrl + "/" + jobId}',
-                    "auth": {"type": "OAuth2"},
-                },
-                "result": "getJobResult",
-            }
-        }
