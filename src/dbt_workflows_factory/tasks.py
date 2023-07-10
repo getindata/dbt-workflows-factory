@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass
 from enum import Enum
@@ -56,9 +57,7 @@ class NodeStep(Step):
                 "call": "subworkflowBatchJob",
                 "args": {
                     "jobId": self.job_id,
-                    "batchApiUrl": "${batchApiUrl}",
                     "select": self.select,
-                    "imageUri": "${imageUri}",
                     "command": self.command.value,
                 },
                 "result": f"{self.step_name}_RESULT",
@@ -141,7 +140,8 @@ class WorkflowStepFactory(StepFactory):
         Returns:
             SingleTask: SingleTask instance.
         """
-        job_id: str = self._job_id_replace_pattern.sub("-", node).lower()[0:45]
+        node_id: str = self._job_id_replace_pattern.sub("-", node).lower()[0:36]
+        job_id = f"{node_id}-{hashlib.sha256(node.encode('utf-8')).hexdigest()[0:8].lower()}"
         task_name: str = self._task_name_replace_pattern.sub("_", node)
 
         if node_definition["node_type"] == NodeType.RUN_TEST:

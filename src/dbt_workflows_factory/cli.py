@@ -18,7 +18,22 @@ def cli() -> None:
 @cli.command()
 @click.argument("manifest_file", type=click.Path(exists=True))
 @click.option("--image-uri", type=str, help="Docker image URI", required=True)
-@click.option("--region", type=str, help="GCP region", required=True)
+@click.option(
+    "--location",
+    type=str,
+    help="GCP region",
+    required=False,
+    default='${sys.get_env("GOOGLE_CLOUD_LOCATION")}',
+    show_default=True,
+)
+@click.option(
+    "--project-id",
+    type=str,
+    help="GCP project ID",
+    required=False,
+    default='${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}',
+    show_default=True,
+)
 @click.option("--gcs-key-volume-remote-path", type=str, help="GCS Remote path for private key", required=True)
 @click.option(
     "--gcs-key-volume-mount-path",
@@ -63,7 +78,8 @@ def cli() -> None:
 def convert(
     manifest_file: str,
     image_uri: str,
-    region: str,
+    location: str,
+    project_id: str,
     gcs_key_volume_remote_path: str,
     gcs_key_volume_mount_path: str,
     gcs_key_volume_container_mount_path: str,
@@ -75,7 +91,8 @@ def convert(
     """Convert dbt manifest.json to YAML for GCP Workflows."""  # noqa: DCO020
     params = Params(
         image_uri=image_uri,
-        region=region,
+        location=location,
+        project_id=project_id,
         gcs_key_volume_remote_path=gcs_key_volume_remote_path,
         gcs_key_volume_mount_path=gcs_key_volume_mount_path,
         gcs_key_volume_container_mount_path=gcs_key_volume_container_mount_path,

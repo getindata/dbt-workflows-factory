@@ -19,7 +19,7 @@ def test_convert(monkeypatch):
         [
             "--image-uri",
             "image_uri",
-            "--region",
+            "--location",
             "region",
             "--gcs-key-volume-remote-path",
             "remote_path",
@@ -39,13 +39,11 @@ def test_convert(monkeypatch):
     params_result = json.dumps(
         {
             "params": (
-                "Params(image_uri='image_uri', region='region', "
-                "gcs_key_volume_remote_path='remote_path', "
-                "gcs_key_volume_mount_path='key_volume_mount_path', "
-                "gcs_key_volume_container_mount_path='key_volume_path', "
-                "container_gcp_key_path='key_path', "
-                "container_gcp_project_id='project_id', "
-                "job_id_suffix='\"my-suffix\"')"
+                "Params(image_uri='image_uri', location='region', "
+                "project_id='${sys.get_env(\"GOOGLE_CLOUD_PROJECT_ID\")}', "
+                "gcs_key_volume_remote_path='remote_path', gcs_key_volume_mount_path='key_volume_mount_path', "
+                "gcs_key_volume_container_mount_path='key_volume_path', container_gcp_key_path='key_path', "
+                "container_gcp_project_id='project_id', job_id_suffix='\"my-suffix\"')"
             ),
             "manifest_path": "tests/unit/dbt_workflows_factory/test_data/manifest.json",
         }
